@@ -1,0 +1,117 @@
+================================================================================
+     PANDUAN LENGKAP DEPLOY VEHICLE MONITORING KE VERCEL + SUPABASE (GRATIS)
+================================================================================
+Aplikasi Anda akan online 24 jam nonstop di internet tanpa perlu laptop menyala.
+Bisa dibuka dari HP, laptop, atau tablet dari mana saja melalui link Vercel.
+
+Database: Supabase (PostgreSQL Cloud Gratis)
+Hosting : Vercel (Serverless Web Hosting Gratis)
+
+================================================================================
+TAHAP 1: AMBIL DATA KONEKSI DARI SUPABASE
+================================================================================
+1. Buka dashboard project Anda di https://supabase.com/dashboard
+2. Klik tombol "Connect" (di bagian atas layar) atau buka:
+   Project Settings (icon gear) -> "Database"
+3. Cari bagian "Connection Parameters" (atau tab "URI / Parameters"):
+   Catat parameter berikut:
+   - Host        : db.xxxxxxxxxxxxxxxxxxxx.supabase.co
+                   (Atau jika memakai connection pooler: aws-0-ap-southeast-1.pooler.supabase.com)
+   - Database    : postgres
+   - Port        : 5432  (atau 6543 jika menggunakan pooler)
+   - User        : postgres  (atau postgres.project-ref jika pooler)
+   - Password    : [Password database yang Anda buat saat pertama kali bikin project Supabase]
+
+   *CATATAN PASSWORD:* Jika Anda lupa password database Supabase, Anda bisa klik
+   tombol "Reset database password" di halaman Database Settings Supabase.
+
+================================================================================
+TAHAP 2: MIGRASI TABEL & DATA KE SUPABASE (CUKUP SEKALI DARI LAPTOP)
+================================================================================
+Kita buat tabel dan master data ke Supabase langsung dari terminal laptop Anda:
+
+1. Buka file `.env` di folder project Anda (C:\laragon\www\Monitoring-kendaraan\.env)
+2. Ubah sementara bagian koneksi database menjadi data Supabase Anda:
+
+   DB_CONNECTION=pgsql
+   DB_HOST=db.xxxxxxxxxxxxxxxxxxxx.supabase.co
+   DB_PORT=5432
+   DB_DATABASE=postgres
+   DB_USERNAME=postgres
+   DB_PASSWORD="PasswordSupabaseAnda"
+   DB_SSLMODE=require
+
+3. Buka PowerShell / Terminal di laptop Anda, jalankan:
+   cd C:\laragon\www\Monitoring-kendaraan
+   php artisan migrate --force
+   php artisan db:seed --class=DatabaseSeeder
+
+   -> Tunggu sampai muncul status sukses hijau!
+   Sekarang seluruh tabel, jenis BBM Pertamina, dan master komponen servis
+   sudah tersimpan rapi di cloud Supabase Anda.
+
+4. Anda bisa cek di dashboard Supabase -> menu "Table Editor" (icon tabel di kiri).
+   Semua tabel (vehicles, fuel_transactions, maintenance_records, dll.) sudah ada!
+
+================================================================================
+TAHAP 3: UPLOAD PROJEK KE GITHUB
+================================================================================
+1. Buka https://github.com lalu buat repositori baru (misal: "monitoring-kendaraan")
+   - Pilih "Private" atau "Public" (Private disarankan).
+2. Di PowerShell laptop Anda, jalankan:
+
+   cd C:\laragon\www\Monitoring-kendaraan
+   git init
+   git add .
+   git commit -m "Deploy Vehicle Monitoring to Vercel with Supabase"
+   git branch -M main
+   git remote add origin https://github.com/USERNAME-ANDA/monitoring-kendaraan.git
+   git push -u origin main
+
+   (Pastikan vercel.json dan api/index.php sudah ikut ter-upload).
+
+================================================================================
+TAHAP 4: DEPLOY DI VERCEL
+================================================================================
+1. Buka https://vercel.com lalu login dengan akun GitHub Anda.
+2. Klik tombol "Add New..." -> pilih "Project".
+3. Cari repositori "monitoring-kendaraan", lalu klik "Import".
+4. Di bagian konfigurasi project:
+   - Framework Preset: biarkan "Other" (karena sudah ada vercel.json otomatis).
+   - Root Directory: biarkan "./".
+
+5. Buka bagian "Environment Variables" (SANGAT PENTING!):
+   Masukkan variabel-variabel berikut satu per satu:
+
+   NAMA VARIABEL            NILAI (VALUE)
+   -----------------------------------------------------------------------------
+   APP_NAME                 Vehicle Monitoring
+   APP_ENV                  production
+   APP_KEY                  base64:tJ+CUHlUtsgNmJSaeUc6z7k/0GZvo1vWweJqfZhYdnY=
+   APP_DEBUG                false
+   APP_URL                  https://nama-project-anda.vercel.app
+   DB_CONNECTION            pgsql
+   DB_HOST                  db.xxxxxxxxxxxxxxxxxxxx.supabase.co
+   DB_PORT                  5432
+   DB_DATABASE              postgres
+   DB_USERNAME              postgres
+   DB_PASSWORD              PasswordSupabaseAnda
+   DB_SSLMODE               require
+
+6. Klik tombol "Deploy"!
+   Tunggu sekitar 1 - 2 menit sampai selesai dan muncul tulisan:
+   "Congratulations! Your project is deployed."
+
+================================================================================
+TAHAP 5: BUKA DI HP DARI MANA SAJA!
+================================================================================
+1. Vercel akan memberikan link domain gratis, contoh:
+   https://monitoring-kendaraan-xxxx.vercel.app
+
+2. Buka link tersebut di browser HP Anda (Chrome / Safari / Firefox).
+3. Anda bisa menggunakan fitur "Add to Home screen" (Tambahkan ke Layar Utama)
+   di browser HP agar aplikasi memiliki ikon di menu HP layaknya aplikasi native!
+
+Selesai! Sekarang kapan pun Anda mengisi bensin di SPBU atau servis di bengkel,
+tinggal buka HP Anda dan catat transaksinya tanpa perlu menyalakan laptop.
+================================================================================
