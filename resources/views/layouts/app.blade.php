@@ -5,169 +5,170 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'Vehicle Monitor') }} – @yield('title', 'Dashboard')</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    {{-- Offline Bootstrap 5 & Icons (Zero CDN / Zero Lag) --}}
+    <link rel="stylesheet" href="{{ asset('css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/bootstrap-icons.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/app-custom.css') }}">
 </head>
-<body class="bg-gray-50 font-[Inter] antialiased">
+<body>
 
-<div class="flex h-screen overflow-hidden" x-data="{ sidebarOpen: false }">
+{{-- Mobile Sidebar Backdrop --}}
+<div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
-    {{-- ── Overlay mobile ─────────────────────────── --}}
-    <div
-        class="fixed inset-0 z-20 bg-black/50 lg:hidden"
-        x-show="sidebarOpen"
-        x-transition:enter="transition ease-out duration-150"
-        x-transition:enter-start="opacity-0"
-        x-transition:enter-end="opacity-100"
-        x-transition:leave="transition ease-in duration-150"
-        x-transition:leave-start="opacity-100"
-        x-transition:leave-end="opacity-0"
-        @click="sidebarOpen = false"
-    ></div>
+{{-- Sidebar Navigation --}}
+<aside class="app-sidebar" id="appSidebar">
+    <div class="sidebar-brand">
+        <i class="bi bi-speedometer2 text-primary me-2 fs-4"></i>
+        <span>Vehicle Monitor</span>
+        <button type="button" class="btn-close btn-close-white ms-auto d-lg-none" id="closeSidebarBtn" aria-label="Close"></button>
+    </div>
 
-    {{-- ── Sidebar ─────────────────────────────────── --}}
-    <aside
-        class="fixed inset-y-0 left-0 z-30 flex w-64 flex-col bg-indigo-900 text-white transition-transform duration-200 ease-in-out lg:static lg:translate-x-0"
-        :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
-    >
-        {{-- Logo / Brand --}}
-        <div class="flex h-16 items-center justify-between px-6 border-b border-indigo-700">
-            <span class="flex items-center gap-2 text-lg font-semibold tracking-tight">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M8 17l-4-4m0 0l4-4m-4 4h16M4 7h16"/>
-                </svg>
-                Vehicle Monitor
-            </span>
-            <button class="lg:hidden text-indigo-300 hover:text-white" @click="sidebarOpen = false">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                </svg>
-            </button>
-        </div>
-
-        {{-- Navigation --}}
-        <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-
+    <div class="sidebar-menu">
+        <ul class="nav flex-column mb-3">
             @php
-                $navItem = function(string $label, string $route, string $icon) {
-                    $active = request()->routeIs($route) || request()->routeIs($route.'.*');
-                    return compact('label', 'route', 'icon', 'active');
-                };
                 $menus = [
-                    ['label' => 'Dashboard',            'route' => 'dashboard',               'icon' => 'home'],
-                    ['label' => 'Kendaraan Saya',        'route' => 'vehicles.index',          'icon' => 'truck'],
-                    ['label' => 'Pengisian BBM',          'route' => 'fuel-transactions.index', 'icon' => 'fuel'],
-                    ['label' => 'Jadwal Perawatan',      'route' => 'schedules.index',         'icon' => 'calendar'],
-                    ['label' => 'Riwayat Servis',        'route' => 'maintenance-records.index','icon' => 'wrench'],
-                    ['label' => 'Laporan Pengeluaran',   'route' => 'reports.index',           'icon' => 'chart'],
+                    ['label' => 'Dashboard',            'route' => 'dashboard',               'icon' => 'bi-speedometer2'],
+                    ['label' => 'Kendaraan Saya',        'route' => 'vehicles.index',          'icon' => 'bi-truck'],
+                    ['label' => 'Pengisian BBM',          'route' => 'fuel-transactions.index', 'icon' => 'bi-fuel-pump'],
+                    ['label' => 'Jadwal Perawatan',      'route' => 'schedules.index',         'icon' => 'bi-calendar-check'],
+                    ['label' => 'Riwayat Servis',        'route' => 'maintenance-records.index','icon' => 'bi-tools'],
+                    ['label' => 'Laporan Pengeluaran',   'route' => 'reports.index',           'icon' => 'bi-bar-chart-line'],
                 ];
             @endphp
 
             @foreach ($menus as $menu)
                 @php $active = request()->routeIs($menu['route']) || request()->routeIs(str_replace('.index', '.*', $menu['route'])); @endphp
-                <a href="{{ route($menu['route']) }}"
-                   class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors
-                          {{ $active ? 'bg-indigo-700 text-white' : 'text-indigo-200 hover:bg-indigo-800 hover:text-white' }}">
-                    @include('layouts._sidebar_icon', ['icon' => $menu['icon']])
-                    {{ $menu['label'] }}
-                </a>
+                <li class="nav-item">
+                    <a href="{{ route($menu['route']) }}" class="nav-link {{ $active ? 'active' : '' }}">
+                        <i class="bi {{ $menu['icon'] }}"></i>
+                        <span>{{ $menu['label'] }}</span>
+                    </a>
+                </li>
             @endforeach
+        </ul>
 
-            {{-- Pengaturan group --}}
-            <div class="pt-4">
-                <p class="px-3 text-xs font-semibold uppercase tracking-widest text-indigo-400">Pengaturan</p>
-                <div class="mt-1 space-y-1">
-                    @php
-                        $settings = [
-                            ['label' => 'Jenis BBM',              'route' => 'fuel-types.index',         'icon' => 'droplet'],
-                            ['label' => 'Komponen Perawatan',     'route' => 'maintenance-items.index',  'icon' => 'cog'],
-                        ];
-                    @endphp
-                    @foreach ($settings as $menu)
-                        @php $active = request()->routeIs($menu['route']) || request()->routeIs(str_replace('.index', '.*', $menu['route'])); @endphp
-                        <a href="{{ route($menu['route']) }}"
-                           class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors
-                                  {{ $active ? 'bg-indigo-700 text-white' : 'text-indigo-200 hover:bg-indigo-800 hover:text-white' }}">
-                            @include('layouts._sidebar_icon', ['icon' => $menu['icon']])
-                            {{ $menu['label'] }}
-                        </a>
-                    @endforeach
-                </div>
-            </div>
-        </nav>
-
-        {{-- App info at bottom --}}
-        <div class="border-t border-indigo-700 p-4">
-            <p class="text-xs text-indigo-300 font-medium">Monitoring Kendaraan</p>
-            <p class="text-2xs text-indigo-400 mt-0.5">Versi Pribadi (Tanpa Login)</p>
-        </div>
-    </aside>
-
-    {{-- ── Main area ───────────────────────────────── --}}
-    <div class="flex flex-1 flex-col overflow-hidden">
-
-        {{-- Topbar --}}
-        <header class="flex h-16 items-center justify-between border-b bg-white px-6 shadow-sm">
-            <button class="text-gray-500 hover:text-gray-700 lg:hidden" @click="sidebarOpen = true">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-                </svg>
-            </button>
-
-            <div class="ml-auto flex items-center gap-3">
-                <span class="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700">
-                    <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
-                    {{ auth()->user()->name ?? 'Pemilik Kendaraan' }}
-                </span>
-            </div>
-        </header>
-
-        {{-- Flash messages --}}
-        <div class="px-6 pt-4 space-y-2">
-            @if (session('success'))
-                <div class="flex items-start gap-3 rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-800" role="alert">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="mt-0.5 h-4 w-4 shrink-0 text-green-500" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                    </svg>
-                    {{ session('success') }}
-                </div>
-            @endif
-            @if (session('error'))
-                <div class="flex items-start gap-3 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-800" role="alert">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="mt-0.5 h-4 w-4 shrink-0 text-red-500" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-                    </svg>
-                    {{ session('error') }}
-                </div>
-            @endif
-        </div>
-
-        {{-- Page content --}}
-        <main class="flex-1 overflow-y-auto p-6">
-            @yield('content')
-        </main>
+        <div class="menu-header">Pengaturan</div>
+        <ul class="nav flex-column">
+            @php
+                $settings = [
+                    ['label' => 'Jenis BBM',              'route' => 'fuel-types.index',         'icon' => 'bi-droplet-half'],
+                    ['label' => 'Komponen Perawatan',     'route' => 'maintenance-items.index',  'icon' => 'bi-gear'],
+                ];
+            @endphp
+            @foreach ($settings as $menu)
+                @php $active = request()->routeIs($menu['route']) || request()->routeIs(str_replace('.index', '.*', $menu['route'])); @endphp
+                <li class="nav-item">
+                    <a href="{{ route($menu['route']) }}" class="nav-link {{ $active ? 'active' : '' }}">
+                        <i class="bi {{ $menu['icon'] }}"></i>
+                        <span>{{ $menu['label'] }}</span>
+                    </a>
+                </li>
+            @endforeach
+        </ul>
     </div>
 
+    <div class="p-3 border-top border-secondary border-opacity-25 text-white-50 small">
+        <div class="fw-semibold text-white">Monitoring Kendaraan</div>
+        <div class="text-xs">Versi Pribadi (Tanpa Login)</div>
+    </div>
+</aside>
+
+{{-- Main Page Container --}}
+<div class="app-main">
+    {{-- Header / Topbar --}}
+    <header class="app-header">
+        <button class="btn btn-sm btn-outline-secondary d-lg-none" type="button" id="openSidebarBtn">
+            <i class="bi bi-list fs-5"></i>
+        </button>
+
+        <div class="d-none d-md-block fw-semibold text-secondary">
+            @yield('header', 'Dashboard')
+        </div>
+
+        <div class="ms-auto d-flex align-items-center">
+            <span class="badge badge-subtle-primary py-2 px-3 rounded-pill d-flex align-items-center gap-2">
+                <span class="badge bg-success p-1 rounded-circle"></span>
+                <span>{{ auth()->user()->name ?? 'Pemilik Kendaraan' }}</span>
+            </span>
+        </div>
+    </header>
+
+    {{-- Flash Notifications --}}
+    <div class="px-4 pt-3">
+        @if (session('success'))
+            <div class="alert alert-success alert-dismissible fade show d-flex align-items-center" role="alert">
+                <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+                <div>{{ session('success') }}</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+        @if (session('error'))
+            <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+                <div>{{ session('error') }}</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+    </div>
+
+    {{-- Content --}}
+    <main class="app-content">
+        @yield('content')
+    </main>
 </div>
 
+{{-- Offline Bootstrap 5 JS Bundle --}}
+<script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
+
 <script>
-    // Simple Alpine.js-free fallback using vanilla JS for sidebar toggle
-    // Alpine.js is assumed to be loaded via app.js
-    document.addEventListener('DOMContentLoaded', () => {
-        // Flash message auto-dismiss
+    document.addEventListener('DOMContentLoaded', function () {
+        // Mobile Sidebar toggler
+        const sidebar = document.getElementById('appSidebar');
+        const backdrop = document.getElementById('sidebarBackdrop');
+        const openBtn = document.getElementById('openSidebarBtn');
+        const closeBtn = document.getElementById('closeSidebarBtn');
+
+        function toggleSidebar(show) {
+            if (show) {
+                sidebar.classList.add('show');
+                backdrop.classList.add('show');
+            } else {
+                sidebar.classList.remove('show');
+                backdrop.classList.remove('show');
+            }
+        }
+
+        if (openBtn) openBtn.addEventListener('click', () => toggleSidebar(true));
+        if (closeBtn) closeBtn.addEventListener('click', () => toggleSidebar(false));
+        if (backdrop) backdrop.addEventListener('click', () => toggleSidebar(false));
+
+        // Auto dismiss flash alerts
         setTimeout(() => {
-            document.querySelectorAll('[role="alert"]').forEach(el => {
-                el.style.transition = 'opacity 0.3s';
-                el.style.opacity = '0';
-                setTimeout(() => el.remove(), 300);
+            document.querySelectorAll('.alert').forEach(function (alertEl) {
+                const bsAlert = bootstrap.Alert.getOrCreateInstance(alertEl);
+                if (bsAlert) bsAlert.close();
             });
         }, 4000);
+
+        // Global Anti Double-Submit
+        document.querySelectorAll('form').forEach(function (form) {
+            form.addEventListener('submit', function (e) {
+                if (form.dataset.submitting === 'true') {
+                    e.preventDefault();
+                    return false;
+                }
+                form.dataset.submitting = 'true';
+                const submitBtn = form.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.classList.add('disabled');
+                    const originalText = submitBtn.innerHTML;
+                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Menyimpan...';
+                }
+            });
+        });
     });
 </script>
-
 </body>
 </html>

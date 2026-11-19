@@ -4,30 +4,26 @@
 @section('header', 'Tambah Jadwal Perawatan')
 
 @section('content')
-<div class="max-w-2xl mx-auto">
-    <div class="flex items-center gap-3 mb-6">
-        <a href="{{ route('schedules.index', $vehicle) }}" class="text-gray-400 hover:text-gray-600 transition">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-            </svg>
+<div class="container-fluid p-0" style="max-width: 760px;">
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <a href="{{ route('schedules.index', $vehicle) }}" class="btn btn-outline-secondary btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 34px; height: 34px;">
+            <i class="bi bi-arrow-left"></i>
         </a>
         <div>
-            <h1 class="text-2xl font-bold text-gray-800">Tambah Jadwal Perawatan</h1>
-            <p class="text-sm text-gray-500 mt-0.5">Untuk kendaraan: <span class="font-semibold text-gray-700">{{ $vehicle->name }}</span></p>
+            <h4 class="fw-bold text-dark mb-0">Tambah Jadwal Perawatan</h4>
+            <div class="text-secondary small">Untuk kendaraan: <span class="fw-semibold text-dark">{{ $vehicle->name }}</span></div>
         </div>
     </div>
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+    <div class="card border-0 shadow-sm rounded-3 p-4">
         <form action="{{ route('schedules.store', $vehicle) }}" method="POST">
             @csrf
 
-            <div class="space-y-4">
+            <div class="row g-3">
                 {{-- Pilih Komponen --}}
-                <div>
-                    <label for="maintenance_item_id" class="block text-sm font-medium text-gray-700">Komponen Perawatan <span class="text-rose-500">*</span></label>
-                    <select name="maintenance_item_id" id="maintenance_item_id"
-                            class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 @error('maintenance_item_id') border-rose-500 @enderror"
-                            required>
+                <div class="col-12">
+                    <label for="maintenance_item_id" class="form-label small fw-semibold">Komponen Perawatan <span class="text-danger">*</span></label>
+                    <select name="maintenance_item_id" id="maintenance_item_id" class="form-select @error('maintenance_item_id') is-invalid @enderror" required>
                         <option value="">Pilih Komponen</option>
                         @foreach ($maintenanceItems as $item)
                             <option value="{{ $item->id }}"
@@ -40,124 +36,110 @@
                         @endforeach
                     </select>
                     @error('maintenance_item_id')
-                        <p class="mt-1 text-xs text-rose-500">{{ $message }}</p>
+                        <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
                 {{-- Interval KM & Interval Hari --}}
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label for="interval_km" class="block text-sm font-medium text-gray-700">Interval Kilometer</label>
-                        <div class="relative mt-1">
-                            <input type="number" name="interval_km" id="interval_km"
-                                   value="{{ old('interval_km') }}"
-                                   placeholder="Contoh: 3000"
-                                   min="100"
-                                   class="block w-full rounded-lg border border-gray-300 pr-10 px-3 py-2 text-sm font-mono shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 @error('interval_km') border-rose-500 @enderror">
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                                <span class="text-xs text-gray-400 font-semibold">KM</span>
-                            </div>
-                        </div>
-                        <p class="mt-1 text-2xs text-gray-400">Kosongkan jika hanya memantau waktu/kondisi.</p>
-                        @error('interval_km')
-                            <p class="mt-1 text-xs text-rose-500">{{ $message }}</p>
-                        @enderror
+                <div class="col-12 col-md-6">
+                    <label for="interval_km" class="form-label small fw-semibold">Interval Kilometer</label>
+                    <div class="input-group">
+                        <input type="number" name="interval_km" id="interval_km"
+                               value="{{ old('interval_km') }}"
+                               placeholder="Contoh: 3000"
+                               min="100"
+                               class="form-control font-monospace @error('interval_km') is-invalid @enderror">
+                        <span class="input-group-text fw-semibold small text-secondary">KM</span>
                     </div>
+                    <div class="form-text text-muted" style="font-size: 0.75rem;">Kosongkan jika hanya memantau waktu/kondisi.</div>
+                    @error('interval_km')
+                        <div class="text-danger small mt-1">{{ $message }}</div>
+                    @enderror
+                </div>
 
-                    <div>
-                        <label for="interval_days" class="block text-sm font-medium text-gray-700">Interval Waktu (Hari)</label>
-                        <div class="relative mt-1">
-                            <input type="number" name="interval_days" id="interval_days"
-                                   value="{{ old('interval_days') }}"
-                                   placeholder="Contoh: 90 (3 bulan)"
-                                   min="1"
-                                   class="block w-full rounded-lg border border-gray-300 pr-12 px-3 py-2 text-sm font-mono shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 @error('interval_days') border-rose-500 @enderror">
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                                <span class="text-xs text-gray-400 font-semibold">Hari</span>
-                            </div>
-                        </div>
-                        <p class="mt-1 text-2xs text-gray-400">Kosongkan jika hanya memantau KM/kondisi.</p>
-                        @error('interval_days')
-                            <p class="mt-1 text-xs text-rose-500">{{ $message }}</p>
-                        @enderror
+                <div class="col-12 col-md-6">
+                    <label for="interval_days" class="form-label small fw-semibold">Interval Waktu (Hari)</label>
+                    <div class="input-group">
+                        <input type="number" name="interval_days" id="interval_days"
+                               value="{{ old('interval_days') }}"
+                               placeholder="Contoh: 90 (3 bulan)"
+                               min="1"
+                               class="form-control font-monospace @error('interval_days') is-invalid @enderror">
+                        <span class="input-group-text fw-semibold small text-secondary">Hari</span>
                     </div>
+                    <div class="form-text text-muted" style="font-size: 0.75rem;">Kosongkan jika hanya memantau KM/kondisi.</div>
+                    @error('interval_days')
+                        <div class="text-danger small mt-1">{{ $message }}</div>
+                    @enderror
                 </div>
 
                 {{-- Ambang Pengingat Sebelum Jatuh Tempo --}}
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label for="reminder_before_km" class="block text-sm font-medium text-gray-700">Peringatkan Sebelum KM (Ambang Segera)</label>
-                        <div class="relative mt-1">
-                            <input type="number" name="reminder_before_km" id="reminder_before_km"
-                                   value="{{ old('reminder_before_km', 200) }}"
-                                   placeholder="Default: 200"
-                                   min="0"
-                                   class="block w-full rounded-lg border border-gray-300 pr-10 px-3 py-2 text-sm font-mono shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                                <span class="text-xs text-gray-400 font-semibold">KM</span>
-                            </div>
-                        </div>
+                <div class="col-12 col-md-6">
+                    <label for="reminder_before_km" class="form-label small fw-semibold">Peringatkan Sebelum KM (Ambang Segera)</label>
+                    <div class="input-group">
+                        <input type="number" name="reminder_before_km" id="reminder_before_km"
+                               value="{{ old('reminder_before_km', 200) }}"
+                               placeholder="Default: 200"
+                               min="0"
+                               class="form-control font-monospace">
+                        <span class="input-group-text fw-semibold small text-secondary">KM</span>
                     </div>
+                </div>
 
-                    <div>
-                        <label for="reminder_before_days" class="block text-sm font-medium text-gray-700">Peringatkan Sebelum Waktu (Hari)</label>
-                        <div class="relative mt-1">
-                            <input type="number" name="reminder_before_days" id="reminder_before_days"
-                                   value="{{ old('reminder_before_days', 7) }}"
-                                   placeholder="Default: 7"
-                                   min="0"
-                                   class="block w-full rounded-lg border border-gray-300 pr-12 px-3 py-2 text-sm font-mono shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                                <span class="text-xs text-gray-400 font-semibold">Hari</span>
-                            </div>
-                        </div>
+                <div class="col-12 col-md-6">
+                    <label for="reminder_before_days" class="form-label small fw-semibold">Peringatkan Sebelum Waktu (Hari)</label>
+                    <div class="input-group">
+                        <input type="number" name="reminder_before_days" id="reminder_before_days"
+                               value="{{ old('reminder_before_days', 7) }}"
+                               placeholder="Default: 7"
+                               min="0"
+                               class="form-control font-monospace">
+                        <span class="input-group-text fw-semibold small text-secondary">Hari</span>
                     </div>
                 </div>
 
                 {{-- Titik Awal Servis Terakhir --}}
-                <div class="rounded-lg bg-gray-50 border border-gray-100 p-4">
-                    <p class="text-xs font-semibold uppercase tracking-wider text-gray-600 mb-2">Titik Awal (Servis Terakhir Dilakukan)</p>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label for="last_service_odometer_km" class="block text-xs font-medium text-gray-600">KM Saat Terakhir Servis</label>
-                            <input type="number" step="0.1" name="last_service_odometer_km" id="last_service_odometer_km"
-                                   value="{{ old('last_service_odometer_km', $vehicle->latestOdometerKm() ?? $vehicle->initial_odometer_km) }}"
-                                   class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm font-mono shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
-                        </div>
-
-                        <div>
-                            <label for="last_service_at" class="block text-xs font-medium text-gray-600">Tanggal Terakhir Servis</label>
-                            <input type="date" name="last_service_at" id="last_service_at"
-                                   value="{{ old('last_service_at', date('Y-m-d')) }}"
-                                   class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                <div class="col-12">
+                    <div class="card bg-light border-0 p-3 rounded-3">
+                        <div class="text-uppercase small fw-bold text-secondary mb-2" style="font-size: 0.75rem;">Titik Awal (Servis Terakhir Dilakukan)</div>
+                        <div class="row g-3">
+                            <div class="col-12 col-md-6">
+                                <label for="last_service_odometer_km" class="form-label small text-secondary">KM Saat Terakhir Servis</label>
+                                <input type="number" step="any" name="last_service_odometer_km" id="last_service_odometer_km"
+                                       value="{{ old('last_service_odometer_km', $vehicle->latestOdometerKm() ?? $vehicle->initial_odometer_km) }}"
+                                       class="form-control font-monospace">
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="last_service_at" class="form-label small text-secondary">Tanggal Terakhir Servis</label>
+                                <input type="date" name="last_service_at" id="last_service_at"
+                                       value="{{ old('last_service_at', date('Y-m-d')) }}"
+                                       class="form-control">
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 {{-- Status Aktif & Catatan --}}
-                <div>
-                    <label class="inline-flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" name="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }}
-                               class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
-                        <span class="text-sm font-medium text-gray-700">Jadwal Aktif</span>
-                    </label>
+                <div class="col-12">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" name="is_active" id="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }}>
+                        <label class="form-check-label small fw-semibold" for="is_active">Jadwal Aktif</label>
+                    </div>
                 </div>
 
-                <div>
-                    <label for="notes" class="block text-sm font-medium text-gray-700">Catatan Khusus</label>
+                <div class="col-12">
+                    <label for="notes" class="form-label small fw-semibold">Catatan Khusus</label>
                     <textarea name="notes" id="notes" rows="2"
                               placeholder="Contoh: Pakai oli sintetis 10W-40"
-                              class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">{{ old('notes') }}</textarea>
+                              class="form-control">{{ old('notes') }}</textarea>
                 </div>
             </div>
 
-            <div class="flex items-center gap-3 mt-6 pt-6 border-t border-gray-100">
-                <button type="submit"
-                        class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-6 py-2.5 rounded-lg transition">
+            <div class="d-flex align-items-center gap-2 mt-4 pt-3 border-top">
+                <button type="submit" class="btn btn-primary px-4">
                     Simpan Jadwal
                 </button>
-                <a href="{{ route('schedules.index', $vehicle) }}"
-                   class="text-gray-600 hover:text-gray-800 text-sm font-medium px-4 py-2.5 rounded-lg border border-gray-200 hover:border-gray-300 transition">
+                <a href="{{ route('schedules.index', $vehicle) }}" class="btn btn-outline-secondary px-3">
                     Batal
                 </a>
             </div>

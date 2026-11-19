@@ -13,7 +13,8 @@ class FuelTransactionController extends Controller
 
     public function index(Request $request)
     {
-        $userVehicleIds = auth()->user()->vehicles()->pluck('id');
+        $vehicles = auth()->user()->vehicles()->orderBy('name')->get();
+        $userVehicleIds = $vehicles->pluck('id');
 
         $query = FuelTransaction::with(['vehicle', 'fuelType'])
             ->whereIn('vehicle_id', $userVehicleIds)
@@ -24,8 +25,6 @@ class FuelTransactionController extends Controller
         }
 
         $fuelTransactions = $query->paginate(15)->withQueryString();
-
-        $vehicles = auth()->user()->vehicles()->orderBy('name')->get();
 
         return view('fuel-transactions.index', compact('fuelTransactions', 'vehicles'));
     }
@@ -123,8 +122,7 @@ class FuelTransactionController extends Controller
 
     private function authorizeVehicle(int $vehicleId): void
     {
-        $userVehicleIds = auth()->user()->vehicles()->pluck('id');
-        if (! $userVehicleIds->contains($vehicleId)) {
+        if (! auth()->user()->vehicles()->where('id', $vehicleId)->exists()) {
             abort(403);
         }
     }

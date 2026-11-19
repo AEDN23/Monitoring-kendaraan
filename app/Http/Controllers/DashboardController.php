@@ -19,6 +19,7 @@ class DashboardController extends Controller
         // Semua kendaraan milik user (aktif)
         $vehicles = $user->vehicles()
             ->where('is_active', true)
+            ->withLatestOdometer()
             ->with(['maintenanceSchedules.maintenanceItem'])
             ->get();
 

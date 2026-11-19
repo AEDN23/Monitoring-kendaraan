@@ -14,6 +14,7 @@ class VehicleController extends Controller
     {
         $vehicles = auth()->user()
             ->vehicles()
+            ->withLatestOdometer()
             ->orderBy('name')
             ->paginate(10);
 

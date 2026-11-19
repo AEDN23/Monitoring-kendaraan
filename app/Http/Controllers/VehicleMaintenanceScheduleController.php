@@ -52,7 +52,11 @@ class VehicleMaintenanceScheduleController extends Controller
     public function index(?Vehicle $vehicle = null)
     {
         $user = Auth::user();
-        $vehicles = $user->vehicles()->where('is_active', true)->orderBy('name')->get();
+        $vehicles = $user->vehicles()
+            ->where('is_active', true)
+            ->withLatestOdometer()
+            ->orderBy('name')
+            ->get();
 
         if (! $vehicle || ! $vehicle->exists) {
             $vehicle = $vehicles->first();

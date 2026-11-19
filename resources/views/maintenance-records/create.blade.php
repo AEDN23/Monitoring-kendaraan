@@ -58,7 +58,7 @@
 
                 <div>
                     <label for="odometer_km" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider">Kilometer Servis <span class="text-rose-500">*</span></label>
-                    <input type="number" step="0.1" name="odometer_km" id="odometer_km"
+                    <input type="number" step="any" name="odometer_km" id="odometer_km"
                            value="{{ old('odometer_km') }}"
                            placeholder="KM saat di bengkel"
                            class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm font-mono shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
@@ -120,19 +120,19 @@
                                     </select>
                                 </td>
                                 <td class="p-2">
-                                    <input type="number" step="0.1" name="items[0][quantity]" value="1" min="0.1"
+                                    <input type="number" step="any" name="items[0][quantity]" value="1" min="0.1"
                                            class="item-qty w-full rounded border border-gray-300 px-2 py-1.5 text-xs text-right font-mono focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" required>
                                 </td>
                                 <td class="p-2">
-                                    <input type="number" step="500" name="items[0][unit_price]" value="0" min="0"
+                                    <input type="number" step="any" name="items[0][unit_price]" value="0" min="0"
                                            class="item-price w-full rounded border border-gray-300 px-2 py-1.5 text-xs text-right font-mono focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" required>
                                 </td>
                                 <td class="p-2">
-                                    <input type="number" step="500" name="items[0][parts_cost]" value="0" min="0" readonly
+                                    <input type="number" step="any" name="items[0][parts_cost]" value="0" min="0" readonly
                                            class="item-parts-cost w-full rounded border border-gray-200 bg-gray-50 px-2 py-1.5 text-xs text-right font-mono text-gray-700">
                                 </td>
                                 <td class="p-2">
-                                    <input type="number" step="500" name="items[0][labor_cost]" value="0" min="0"
+                                    <input type="number" step="any" name="items[0][labor_cost]" value="0" min="0"
                                            class="item-labor-cost w-full rounded border border-gray-300 px-2 py-1.5 text-xs text-right font-mono focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" required>
                                 </td>
                                 <td class="p-2 text-center">
@@ -252,19 +252,19 @@
                     </select>
                 </td>
                 <td class="p-2">
-                    <input type="number" step="0.1" name="items[${index}][quantity]" value="1" min="0.1"
+                    <input type="number" step="any" name="items[${index}][quantity]" value="1" min="0.1"
                            class="item-qty w-full rounded border border-gray-300 px-2 py-1.5 text-xs text-right font-mono focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" required>
                 </td>
                 <td class="p-2">
-                    <input type="number" step="500" name="items[${index}][unit_price]" value="0" min="0"
+                    <input type="number" step="any" name="items[${index}][unit_price]" value="0" min="0"
                            class="item-price w-full rounded border border-gray-300 px-2 py-1.5 text-xs text-right font-mono focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" required>
                 </td>
                 <td class="p-2">
-                    <input type="number" step="500" name="items[${index}][parts_cost]" value="0" min="0" readonly
+                    <input type="number" step="any" name="items[${index}][parts_cost]" value="0" min="0" readonly
                            class="item-parts-cost w-full rounded border border-gray-200 bg-gray-50 px-2 py-1.5 text-xs text-right font-mono text-gray-700">
                 </td>
                 <td class="p-2">
-                    <input type="number" step="500" name="items[${index}][labor_cost]" value="0" min="0"
+                    <input type="number" step="any" name="items[${index}][labor_cost]" value="0" min="0"
                            class="item-labor-cost w-full rounded border border-gray-300 px-2 py-1.5 text-xs text-right font-mono focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" required>
                 </td>
                 <td class="p-2 text-center">

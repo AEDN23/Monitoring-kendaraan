@@ -3,7 +3,7 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "echo 'Build done'",
+        "build": "node -e \"const fs = require('fs'); if (!fs.existsSync('dist')) fs.mkdirSync('dist'); if (!fs.existsSync('public')) fs.mkdirSync('public');\"",
         "dev": "vite"
     },
     "devDependencies": {

@@ -5,34 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'Vehicle Monitor') }} – @yield('title', 'Masuk')</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
+
+    {{-- Offline Bootstrap 5 & Icons --}}
+    <link rel="stylesheet" href="{{ asset('css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/bootstrap-icons.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/app-custom.css') }}">
 </head>
-<body class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-indigo-100 font-[Inter] antialiased flex items-center justify-center p-4">
+<body class="bg-light d-flex align-items-center justify-content-center min-vh-100 py-4">
 
-    <div class="w-full max-w-md">
-
+    <div class="container" style="max-width: 440px;">
         {{-- Logo --}}
-        <div class="mb-8 text-center">
-            <div class="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-indigo-600 shadow-lg mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                </svg>
+        <div class="text-center mb-4">
+            <div class="d-inline-flex align-items-center justify-content-center bg-primary text-white rounded-4 shadow-sm mb-3" style="width: 56px; height: 56px;">
+                <i class="bi bi-speedometer2 fs-2"></i>
             </div>
-            <h1 class="text-2xl font-bold text-gray-900">Vehicle Monitor</h1>
-            <p class="mt-1 text-sm text-gray-500">Pantau kendaraan Anda dengan mudah</p>
+            <h3 class="fw-bold text-dark mb-1">Vehicle Monitor</h3>
+            <p class="text-secondary small mb-0">Pantau kendaraan Anda dengan mudah</p>
         </div>
 
         {{-- Card --}}
-        <div class="rounded-2xl bg-white shadow-xl ring-1 ring-gray-200 p-8">
-
+        <div class="card shadow-sm border-0 rounded-4 p-4 p-md-5">
             {{-- Flash errors --}}
             @if ($errors->any())
-                <div class="mb-5 rounded-lg bg-red-50 border border-red-200 p-4 text-sm text-red-700">
-                    <ul class="list-disc list-inside space-y-1">
+                <div class="alert alert-danger py-2 small mb-4" role="alert">
+                    <ul class="mb-0 ps-3">
                         @foreach ($errors->all() as $error)
                             <li>{{ $error }}</li>
                         @endforeach
@@ -41,15 +37,15 @@
             @endif
 
             @if (session('status'))
-                <div class="mb-5 rounded-lg bg-green-50 border border-green-200 p-4 text-sm text-green-700">
+                <div class="alert alert-success py-2 small mb-4" role="alert">
                     {{ session('status') }}
                 </div>
             @endif
 
             @yield('content')
         </div>
-
     </div>
 
+    <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
 </body>
 </html>

@@ -102,7 +102,7 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label for="last_service_odometer_km" class="block text-xs font-medium text-gray-600">KM Saat Terakhir Servis</label>
-                            <input type="number" step="0.1" name="last_service_odometer_km" id="last_service_odometer_km"
+                            <input type="number" step="any" name="last_service_odometer_km" id="last_service_odometer_km"
                                    value="{{ old('last_service_odometer_km', $schedule->last_service_odometer_km) }}"
                                    class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm font-mono shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
                         </div>

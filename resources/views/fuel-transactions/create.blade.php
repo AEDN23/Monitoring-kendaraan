@@ -4,174 +4,152 @@
 @section('header', 'Catat Pengisian BBM')
 
 @section('content')
-<div class="max-w-2xl mx-auto">
-    <div class="flex items-center gap-3 mb-6">
-        <a href="{{ route('fuel-transactions.index') }}" class="text-gray-400 hover:text-gray-600 transition">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-            </svg>
+<div class="container-fluid p-0" style="max-width: 760px;">
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <a href="{{ route('fuel-transactions.index') }}" class="btn btn-outline-secondary btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 34px; height: 34px;">
+            <i class="bi bi-arrow-left"></i>
         </a>
         <div>
-            <h1 class="text-2xl font-bold text-gray-800">Catat Pengisian BBM</h1>
-            <p class="text-sm text-gray-500 mt-0.5">Mendukung input backdate dan kalkulasi liter otomatis</p>
+            <h4 class="fw-bold text-dark mb-0">Catat Pengisian BBM</h4>
+            <div class="text-secondary small">Mendukung input backdate dan kalkulasi liter otomatis</div>
         </div>
     </div>
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+    <div class="card border-0 shadow-sm rounded-3 p-4">
         <form action="{{ route('fuel-transactions.store') }}" method="POST">
             @csrf
 
-            <div class="space-y-4">
+            <div class="row g-3">
                 {{-- Kendaraan & Jenis BBM --}}
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label for="vehicle_id" class="block text-sm font-medium text-gray-700">Kendaraan <span class="text-rose-500">*</span></label>
-                        <select name="vehicle_id" id="vehicle_id"
-                                class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 @error('vehicle_id') border-rose-500 @enderror"
-                                required>
-                            <option value="">Pilih Kendaraan</option>
-                            @foreach ($vehicles as $v)
-                                <option value="{{ $v->id }}" {{ old('vehicle_id', request('vehicle_id')) == $v->id ? 'selected' : '' }}>
-                                    {{ $v->name }} {{ $v->license_plate ? "({$v->license_plate})" : '' }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('vehicle_id')
-                            <p class="mt-1 text-xs text-rose-500">{{ $message }}</p>
-                        @enderror
-                    </div>
+                <div class="col-12 col-md-6">
+                    <label for="vehicle_id" class="form-label small fw-semibold">Kendaraan <span class="text-danger">*</span></label>
+                    <select name="vehicle_id" id="vehicle_id" class="form-select @error('vehicle_id') is-invalid @enderror" required>
+                        <option value="">Pilih Kendaraan</option>
+                        @foreach ($vehicles as $v)
+                            <option value="{{ $v->id }}" {{ old('vehicle_id', request('vehicle_id')) == $v->id ? 'selected' : '' }}>
+                                {{ $v->name }} {{ $v->license_plate ? "({$v->license_plate})" : '' }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('vehicle_id')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
 
-                    <div>
-                        <label for="fuel_type_id" class="block text-sm font-medium text-gray-700">Jenis BBM <span class="text-rose-500">*</span></label>
-                        <select name="fuel_type_id" id="fuel_type_id"
-                                class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 @error('fuel_type_id') border-rose-500 @enderror"
-                                required>
-                            <option value="">Pilih Jenis BBM</option>
-                            @foreach ($fuelTypes as $ft)
-                                <option value="{{ $ft->id }}" {{ old('fuel_type_id') == $ft->id ? 'selected' : '' }}>
-                                    {{ $ft->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('fuel_type_id')
-                            <p class="mt-1 text-xs text-rose-500">{{ $message }}</p>
-                        @enderror
-                    </div>
+                <div class="col-12 col-md-6">
+                    <label for="fuel_type_id" class="form-label small fw-semibold">Jenis BBM <span class="text-danger">*</span></label>
+                    <select name="fuel_type_id" id="fuel_type_id" class="form-select @error('fuel_type_id') is-invalid @enderror" required>
+                        <option value="">Pilih Jenis BBM</option>
+                        @foreach ($fuelTypes as $ft)
+                            <option value="{{ $ft->id }}" {{ old('fuel_type_id') == $ft->id ? 'selected' : '' }}>
+                                {{ $ft->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('fuel_type_id')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                 </div>
 
                 {{-- Tanggal Transaksi & Odometer --}}
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label for="transaction_at" class="block text-sm font-medium text-gray-700">Tanggal & Waktu Transaksi <span class="text-rose-500">*</span></label>
-                        <input type="datetime-local" name="transaction_at" id="transaction_at"
-                               value="{{ old('transaction_at', date('Y-m-d\TH:i')) }}"
-                               class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 @error('transaction_at') border-rose-500 @enderror"
-                               required>
-                        <p class="mt-1 text-2xs text-gray-400">Bisa diisi tanggal lampau (backdate).</p>
-                        @error('transaction_at')
-                            <p class="mt-1 text-xs text-rose-500">{{ $message }}</p>
-                        @enderror
-                    </div>
+                <div class="col-12 col-md-6">
+                    <label for="transaction_at" class="form-label small fw-semibold">Tanggal & Waktu Transaksi <span class="text-danger">*</span></label>
+                    <input type="datetime-local" name="transaction_at" id="transaction_at"
+                           value="{{ old('transaction_at', date('Y-m-d\TH:i')) }}"
+                           class="form-control @error('transaction_at') is-invalid @enderror"
+                           required>
+                    <div class="form-text text-muted" style="font-size: 0.75rem;">Bisa diisi tanggal lampau (backdate).</div>
+                    @error('transaction_at')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
 
-                    <div>
-                        <label for="odometer_km" class="block text-sm font-medium text-gray-700">Odometer Saat Pengisian <span class="text-rose-500">*</span></label>
-                        <div class="relative mt-1">
-                            <input type="number" step="0.1" name="odometer_km" id="odometer_km"
-                                   value="{{ old('odometer_km') }}"
-                                   placeholder="Contoh: 15420.5"
-                                   min="0"
-                                   class="block w-full rounded-lg border border-gray-300 pr-10 px-3 py-2 text-sm font-mono shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 @error('odometer_km') border-rose-500 @enderror"
-                                   required>
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                                <span class="text-xs text-gray-400 font-semibold">KM</span>
-                            </div>
-                        </div>
-                        @error('odometer_km')
-                            <p class="mt-1 text-xs text-rose-500">{{ $message }}</p>
-                        @enderror
+                <div class="col-12 col-md-6">
+                    <label for="odometer_km" class="form-label small fw-semibold">Odometer Saat Pengisian <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <input type="number" step="any" name="odometer_km" id="odometer_km"
+                               value="{{ old('odometer_km') }}"
+                               placeholder="Contoh: 15420.5"
+                               min="0"
+                               class="form-control font-monospace @error('odometer_km') is-invalid @enderror"
+                               required>
+                        <span class="input-group-text fw-semibold small text-secondary">KM</span>
                     </div>
+                    @error('odometer_km')
+                        <div class="text-danger small mt-1">{{ $message }}</div>
+                    @enderror
                 </div>
 
                 {{-- Total Pembayaran & Harga Per Liter --}}
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label for="total_amount" class="block text-sm font-medium text-gray-700">Total Pembayaran (Rp) <span class="text-rose-500">*</span></label>
-                        <div class="relative mt-1">
-                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                <span class="text-xs text-gray-400 font-semibold">Rp</span>
-                            </div>
-                            <input type="number" step="100" name="total_amount" id="total_amount"
-                                   value="{{ old('total_amount') }}"
-                                   placeholder="Contoh: 50000"
-                                   min="0"
-                                   class="block w-full rounded-lg border border-gray-300 pl-9 px-3 py-2 text-sm font-mono shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 @error('total_amount') border-rose-500 @enderror"
-                                   required>
-                        </div>
-                        @error('total_amount')
-                            <p class="mt-1 text-xs text-rose-500">{{ $message }}</p>
-                        @enderror
+                <div class="col-12 col-md-6">
+                    <label for="total_amount" class="form-label small fw-semibold">Total Pembayaran (Rp) <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text fw-semibold small text-secondary">Rp</span>
+                        <input type="number" step="any" name="total_amount" id="total_amount"
+                               value="{{ old('total_amount') }}"
+                               placeholder="Contoh: 50000"
+                               min="0"
+                               class="form-control font-monospace @error('total_amount') is-invalid @enderror"
+                               required>
                     </div>
+                    @error('total_amount')
+                        <div class="text-danger small mt-1">{{ $message }}</div>
+                    @enderror
+                </div>
 
-                    <div>
-                        <label for="price_per_liter" class="block text-sm font-medium text-gray-700">Harga Per Liter (Rp) <span class="text-rose-500">*</span></label>
-                        <div class="relative mt-1">
-                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                <span class="text-xs text-gray-400 font-semibold">Rp</span>
-                            </div>
-                            <input type="number" step="50" name="price_per_liter" id="price_per_liter"
-                                   value="{{ old('price_per_liter') }}"
-                                   placeholder="Contoh: 10000"
-                                   min="1"
-                                   class="block w-full rounded-lg border border-gray-300 pl-9 px-3 py-2 text-sm font-mono shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 @error('price_per_liter') border-rose-500 @enderror"
-                                   required>
-                        </div>
-                        @error('price_per_liter')
-                            <p class="mt-1 text-xs text-rose-500">{{ $message }}</p>
-                        @enderror
+                <div class="col-12 col-md-6">
+                    <label for="price_per_liter" class="form-label small fw-semibold">Harga Per Liter (Rp) <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text fw-semibold small text-secondary">Rp</span>
+                        <input type="number" step="any" name="price_per_liter" id="price_per_liter"
+                               value="{{ old('price_per_liter') }}"
+                               placeholder="Contoh: 10000"
+                               min="1"
+                               class="form-control font-monospace @error('price_per_liter') is-invalid @enderror"
+                               required>
                     </div>
+                    @error('price_per_liter')
+                        <div class="text-danger small mt-1">{{ $message }}</div>
+                    @enderror
                 </div>
 
                 {{-- Box Kalkulasi Otomatis Volume --}}
-                <div class="rounded-lg bg-indigo-50/70 border border-indigo-100 p-4">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                            <span class="text-xs font-semibold text-indigo-900">Estimasi Volume Didapat:</span>
+                <div class="col-12">
+                    <div class="alert alert-primary bg-primary bg-opacity-10 border-0 p-3 mb-0 rounded-3">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center gap-2 text-primary fw-semibold small">
+                                <i class="bi bi-info-circle fs-5"></i>
+                                <span>Estimasi Volume Didapat:</span>
+                            </div>
+                            <span id="preview_volume" class="fs-5 fw-bold font-monospace text-primary">0.000 Liter</span>
                         </div>
-                        <span id="preview_volume" class="font-mono text-lg font-bold text-indigo-700">0.000 Liter</span>
+                        <div class="small text-secondary mt-1" style="font-size: 0.75rem;">Volume dihitung otomatis dari Total Pembayaran / Harga per Liter.</div>
                     </div>
-                    <p class="mt-1 text-2xs text-indigo-500">Volume dihitung otomatis dari Total Pembayaran / Harga per Liter.</p>
                 </div>
 
                 {{-- Nama SPBU & Catatan --}}
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label for="station_name" class="block text-sm font-medium text-gray-700">Nama SPBU / Lokasi</label>
-                        <input type="text" name="station_name" id="station_name"
-                               value="{{ old('station_name') }}"
-                               placeholder="Contoh: SPBU Pertamina Dago"
-                               class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
-                    </div>
+                <div class="col-12 col-md-6">
+                    <label for="station_name" class="form-label small fw-semibold">Nama SPBU / Lokasi</label>
+                    <input type="text" name="station_name" id="station_name"
+                           value="{{ old('station_name') }}"
+                           placeholder="Contoh: SPBU Pertamina Dago"
+                           class="form-control">
+                </div>
 
-                    <div>
-                        <label for="notes" class="block text-sm font-medium text-gray-700">Catatan</label>
-                        <input type="text" name="notes" id="notes"
-                               value="{{ old('notes') }}"
-                               placeholder="Contoh: Isi full tank"
-                               class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
-                    </div>
+                <div class="col-12 col-md-6">
+                    <label for="notes" class="form-label small fw-semibold">Catatan</label>
+                    <input type="text" name="notes" id="notes"
+                           value="{{ old('notes') }}"
+                           placeholder="Contoh: Isi full tank"
+                           class="form-control">
                 </div>
             </div>
 
-            <div class="flex items-center gap-3 mt-6 pt-6 border-t border-gray-100">
-                <button type="submit"
-                        class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-6 py-2.5 rounded-lg transition">
+            <div class="d-flex align-items-center gap-2 mt-4 pt-3 border-top">
+                <button type="submit" class="btn btn-primary px-4">
                     Simpan Transaksi BBM
                 </button>
-                <a href="{{ route('fuel-transactions.index') }}"
-                   class="text-gray-600 hover:text-gray-800 text-sm font-medium px-4 py-2.5 rounded-lg border border-gray-200 hover:border-gray-300 transition">
+                <a href="{{ route('fuel-transactions.index') }}" class="btn btn-outline-secondary px-3">
                     Batal
                 </a>
             </div>

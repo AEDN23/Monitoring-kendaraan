@@ -4,96 +4,86 @@
 @section('header', 'Detail Transaksi BBM')
 
 @section('content')
-<div class="max-w-2xl mx-auto">
-    <div class="flex items-center gap-3 mb-6">
-        <a href="{{ route('fuel-transactions.index') }}" class="text-gray-400 hover:text-gray-600 transition">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-            </svg>
-        </a>
-        <div class="flex-1 flex items-center justify-between">
+<div class="container-fluid p-0" style="max-width: 760px;">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <a href="{{ route('fuel-transactions.index') }}" class="btn btn-outline-secondary btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 34px; height: 34px;">
+                <i class="bi bi-arrow-left"></i>
+            </a>
             <div>
-                <h1 class="text-2xl font-bold text-gray-800">Detail Pengisian BBM</h1>
-                <p class="text-sm text-gray-500 mt-0.5">Transaksi tanggal {{ $fuelTransaction->transaction_at->format('d F Y, H:i') }}</p>
+                <h4 class="fw-bold text-dark mb-0">Detail Pengisian BBM</h4>
+                <div class="text-secondary small">Transaksi tanggal {{ $fuelTransaction->transaction_at->format('d F Y, H:i') }}</div>
             </div>
-            <div class="flex items-center gap-2">
-                <a href="{{ route('fuel-transactions.edit', $fuelTransaction) }}"
-                   class="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
-                    Edit
-                </a>
-                <form action="{{ route('fuel-transactions.destroy', $fuelTransaction) }}" method="POST"
-                      onsubmit="return confirm('Hapus transaksi BBM ini?');" class="inline">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="rounded-lg bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700 hover:bg-rose-100">
-                        Hapus
-                    </button>
-                </form>
-            </div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ route('fuel-transactions.edit', $fuelTransaction) }}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-pencil me-1"></i> Edit
+            </a>
+            <form action="{{ route('fuel-transactions.destroy', $fuelTransaction) }}" method="POST"
+                  onsubmit="return confirm('Hapus transaksi BBM ini?');" class="d-inline">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-sm btn-outline-danger">
+                    <i class="bi bi-trash me-1"></i> Hapus
+                </button>
+            </form>
         </div>
     </div>
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
         {{-- Card Highlight Total --}}
-        <div class="bg-indigo-900 p-6 text-white flex items-center justify-between">
+        <div class="p-4 text-white d-flex align-items-center justify-content-between" style="background-color: var(--sidebar-bg);">
             <div>
-                <span class="text-xs uppercase tracking-wider text-indigo-300">Total Pembayaran</span>
-                <p class="text-3xl font-extrabold mt-1">Rp {{ number_format($fuelTransaction->total_amount, 0, ',', '.') }}</p>
+                <div class="text-uppercase small text-white-50" style="font-size: 0.75rem;">Total Pembayaran</div>
+                <div class="fs-2 fw-bold font-monospace mt-1">Rp {{ number_format($fuelTransaction->total_amount, 0, ',', '.') }}</div>
             </div>
-            <div class="text-right">
-                <span class="text-xs uppercase tracking-wider text-indigo-300">Volume Didapat</span>
-                <p class="text-2xl font-bold font-mono mt-1">{{ number_format($fuelTransaction->volume_liter, 3, ',', '.') }} L</p>
+            <div class="text-end">
+                <div class="text-uppercase small text-white-50" style="font-size: 0.75rem;">Volume Didapat</div>
+                <div class="fs-3 fw-bold font-monospace mt-1">{{ number_format($fuelTransaction->volume_liter, 3, ',', '.') }} L</div>
             </div>
         </div>
 
         {{-- Detail Informasi --}}
-        <div class="p-6 divide-y divide-gray-100 text-sm">
-            <div class="py-3 flex justify-between">
-                <span class="text-gray-500">Kendaraan</span>
-                <a href="{{ route('vehicles.show', $fuelTransaction->vehicle) }}" class="font-semibold text-indigo-600 hover:underline">
+        <ul class="list-group list-group-flush small">
+            <li class="list-group-item d-flex justify-content-between py-3">
+                <span class="text-secondary">Kendaraan</span>
+                <a href="{{ route('vehicles.show', $fuelTransaction->vehicle) }}" class="fw-semibold text-decoration-none">
                     {{ $fuelTransaction->vehicle->name ?? '-' }}
                 </a>
-            </div>
-
-            <div class="py-3 flex justify-between">
-                <span class="text-gray-500">Jenis BBM</span>
-                <span class="font-semibold text-gray-900">{{ $fuelTransaction->fuelType->name ?? '-' }}</span>
-            </div>
-
-            <div class="py-3 flex justify-between">
-                <span class="text-gray-500">Harga Satuan Snapshot</span>
-                <span class="font-mono text-gray-800">Rp {{ number_format($fuelTransaction->price_per_liter, 0, ',', '.') }} / Liter</span>
-            </div>
-
-            <div class="py-3 flex justify-between">
-                <span class="text-gray-500">Odometer Tercatat</span>
-                <span class="font-mono font-semibold text-gray-900">{{ number_format($fuelTransaction->odometer_km, 1, ',', '.') }} KM</span>
-            </div>
-
-            <div class="py-3 flex justify-between">
-                <span class="text-gray-500">Tanggal Transaksi Aktual</span>
-                <span class="text-gray-800">{{ $fuelTransaction->transaction_at->format('d/m/Y H:i') }}</span>
-            </div>
-
-            <div class="py-3 flex justify-between">
-                <span class="text-gray-500">Waktu Input ke Aplikasi</span>
-                <span class="text-gray-400 text-xs">{{ $fuelTransaction->recorded_at ? $fuelTransaction->recorded_at->format('d/m/Y H:i') : '-' }}</span>
-            </div>
-
+            </li>
+            <li class="list-group-item d-flex justify-content-between py-3">
+                <span class="text-secondary">Jenis BBM</span>
+                <span class="fw-semibold text-dark">{{ $fuelTransaction->fuelType->name ?? '-' }}</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between py-3">
+                <span class="text-secondary">Harga Satuan Snapshot</span>
+                <span class="font-monospace text-dark">Rp {{ number_format($fuelTransaction->price_per_liter, 0, ',', '.') }} / Liter</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between py-3">
+                <span class="text-secondary">Odometer Tercatat</span>
+                <span class="font-monospace fw-semibold text-dark">{{ number_format($fuelTransaction->odometer_km, 1, ',', '.') }} KM</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between py-3">
+                <span class="text-secondary">Tanggal Transaksi Aktual</span>
+                <span class="text-dark">{{ $fuelTransaction->transaction_at->format('d/m/Y H:i') }}</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between py-3">
+                <span class="text-secondary">Waktu Input ke Aplikasi</span>
+                <span class="text-muted">{{ $fuelTransaction->recorded_at ? $fuelTransaction->recorded_at->format('d/m/Y H:i') : '-' }}</span>
+            </li>
             @if($fuelTransaction->station_name)
-                <div class="py-3 flex justify-between">
-                    <span class="text-gray-500">Lokasi / SPBU</span>
-                    <span class="text-gray-800">{{ $fuelTransaction->station_name }}</span>
-                </div>
+                <li class="list-group-item d-flex justify-content-between py-3">
+                    <span class="text-secondary">Lokasi / SPBU</span>
+                    <span class="text-dark">{{ $fuelTransaction->station_name }}</span>
+                </li>
             @endif
-
             @if($fuelTransaction->notes)
-                <div class="py-3">
-                    <span class="text-gray-500 block mb-1">Catatan</span>
-                    <p class="text-gray-700 bg-gray-50 rounded-lg p-3 text-xs">{{ $fuelTransaction->notes }}</p>
-                </div>
+                <li class="list-group-item py-3">
+                    <span class="text-secondary d-block mb-1">Catatan:</span>
+                    <div class="bg-light p-2 rounded text-dark">{{ $fuelTransaction->notes }}</div>
+                </li>
             @endif
-        </div>
+        </ul>
     </div>
 </div>
 @endsection
