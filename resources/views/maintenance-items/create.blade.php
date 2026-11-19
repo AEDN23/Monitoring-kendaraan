@@ -4,123 +4,106 @@
 @section('header', 'Tambah Komponen Perawatan')
 
 @section('content')
-<div class="max-w-2xl mx-auto">
-    <div class="flex items-center gap-3 mb-6">
-        <a href="{{ route('maintenance-items.index') }}" class="text-gray-400 hover:text-gray-600 transition">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-            </svg>
+<div class="container-fluid p-0" style="max-width: 760px;">
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <a href="{{ route('maintenance-items.index') }}" class="btn btn-outline-secondary btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 34px; height: 34px;">
+            <i class="bi bi-arrow-left"></i>
         </a>
-        <h1 class="text-xl font-bold text-gray-800">Tambah Komponen Perawatan</h1>
+        <h4 class="fw-bold text-dark mb-0">Tambah Komponen Perawatan</h4>
     </div>
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+    <div class="card border-0 shadow-sm rounded-3 p-4">
         <form action="{{ route('maintenance-items.store') }}" method="POST">
             @csrf
 
-            <div class="space-y-4">
+            <div class="row g-3">
                 {{-- Nama & Kategori --}}
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label for="name" class="block text-sm font-medium text-gray-700">Nama Komponen <span class="text-rose-500">*</span></label>
-                        <input type="text" name="name" id="name"
-                               value="{{ old('name') }}"
-                               placeholder="Contoh: Oli Mesin, Kampas Rem Depan"
-                               class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 @error('name') border-rose-500 @enderror"
-                               required>
-                        @error('name')
-                            <p class="mt-1 text-xs text-rose-500">{{ $message }}</p>
-                        @enderror
-                    </div>
+                <div class="col-12 col-md-6">
+                    <label for="name" class="form-label small fw-semibold">Nama Komponen <span class="text-danger">*</span></label>
+                    <input type="text" name="name" id="name"
+                           value="{{ old('name') }}"
+                           placeholder="Contoh: Oli Mesin, Kampas Rem Depan"
+                           class="form-control @error('name') is-invalid @enderror"
+                           required>
+                    @error('name')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
 
-                    <div>
-                        <label for="category" class="block text-sm font-medium text-gray-700">Kategori</label>
-                        <input type="text" name="category" id="category"
-                               value="{{ old('category') }}"
-                               placeholder="Contoh: Mesin, Rem, Ban, Kelistrikan"
-                               class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
-                    </div>
+                <div class="col-12 col-md-6">
+                    <label for="category" class="form-label small fw-semibold">Kategori</label>
+                    <input type="text" name="category" id="category"
+                           value="{{ old('category') }}"
+                           placeholder="Contoh: Mesin, Rem, Ban, Kelistrikan"
+                           class="form-control">
                 </div>
 
                 {{-- Mode Pantau & Berlaku Untuk --}}
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label for="tracking_mode" class="block text-sm font-medium text-gray-700">Metode Pemantauan <span class="text-rose-500">*</span></label>
-                        <select name="tracking_mode" id="tracking_mode"
-                                class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" required>
-                            <option value="km_or_time" {{ old('tracking_mode') === 'km_or_time' ? 'selected' : '' }}>KM atau Waktu (yang mana tercapai duluan)</option>
-                            <option value="km" {{ old('tracking_mode') === 'km' ? 'selected' : '' }}>Hanya Kilometer (KM)</option>
-                            <option value="time" {{ old('tracking_mode') === 'time' ? 'selected' : '' }}>Hanya Waktu (Hari/Bulan)</option>
-                            <option value="condition" {{ old('tracking_mode') === 'condition' ? 'selected' : '' }}>Pemeriksaan Kondisi Manual (Ban, Rem)</option>
-                        </select>
-                    </div>
+                <div class="col-12 col-md-6">
+                    <label for="tracking_mode" class="form-label small fw-semibold">Metode Pemantauan <span class="text-danger">*</span></label>
+                    <select name="tracking_mode" id="tracking_mode" class="form-select" required>
+                        <option value="km_or_time" {{ old('tracking_mode') === 'km_or_time' ? 'selected' : '' }}>KM atau Waktu (mana duluan)</option>
+                        <option value="km" {{ old('tracking_mode') === 'km' ? 'selected' : '' }}>Hanya Kilometer (KM)</option>
+                        <option value="time" {{ old('tracking_mode') === 'time' ? 'selected' : '' }}>Hanya Waktu (Hari/Bulan)</option>
+                        <option value="condition" {{ old('tracking_mode') === 'condition' ? 'selected' : '' }}>Pemeriksaan Kondisi Fisik</option>
+                    </select>
+                </div>
 
-                    <div>
-                        <label for="applies_to" class="block text-sm font-medium text-gray-700">Berlaku Untuk Kendaraan <span class="text-rose-500">*</span></label>
-                        <select name="applies_to" id="applies_to"
-                                class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" required>
-                            <option value="both" {{ old('applies_to', 'both') === 'both' ? 'selected' : '' }}>Sepeda Motor & Mobil</option>
-                            <option value="motorcycle" {{ old('applies_to') === 'motorcycle' ? 'selected' : '' }}>Sepeda Motor Saja</option>
-                            <option value="car" {{ old('applies_to') === 'car' ? 'selected' : '' }}>Mobil Saja</option>
-                            <option value="other" {{ old('applies_to') === 'other' ? 'selected' : '' }}>Lainnya</option>
-                        </select>
-                    </div>
+                <div class="col-12 col-md-6">
+                    <label for="applies_to" class="form-label small fw-semibold">Berlaku Untuk Kendaraan <span class="text-danger">*</span></label>
+                    <select name="applies_to" id="applies_to" class="form-select" required>
+                        <option value="both" {{ old('applies_to', 'both') === 'both' ? 'selected' : '' }}>Sepeda Motor & Mobil</option>
+                        <option value="motorcycle" {{ old('applies_to') === 'motorcycle' ? 'selected' : '' }}>Sepeda Motor Saja</option>
+                        <option value="car" {{ old('applies_to') === 'car' ? 'selected' : '' }}>Mobil Saja</option>
+                        <option value="other" {{ old('applies_to') === 'other' ? 'selected' : '' }}>Lainnya</option>
+                    </select>
                 </div>
 
                 {{-- Default Interval --}}
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label for="default_interval_km" class="block text-sm font-medium text-gray-700">Interval Bawaan (KM)</label>
-                        <div class="relative mt-1">
-                            <input type="number" name="default_interval_km" id="default_interval_km"
-                                   value="{{ old('default_interval_km') }}"
-                                   placeholder="Contoh: 3000"
-                                   min="100"
-                                   class="block w-full rounded-lg border border-gray-300 pr-10 px-3 py-2 text-sm font-mono shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                                <span class="text-xs text-gray-400 font-semibold">KM</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label for="default_interval_days" class="block text-sm font-medium text-gray-700">Interval Bawaan (Hari)</label>
-                        <div class="relative mt-1">
-                            <input type="number" name="default_interval_days" id="default_interval_days"
-                                   value="{{ old('default_interval_days') }}"
-                                   placeholder="Contoh: 90"
-                                   min="1"
-                                   class="block w-full rounded-lg border border-gray-300 pr-12 px-3 py-2 text-sm font-mono shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                                <span class="text-xs text-gray-400 font-semibold">Hari</span>
-                            </div>
-                        </div>
+                <div class="col-12 col-md-6">
+                    <label for="default_interval_km" class="form-label small fw-semibold">Interval Bawaan (KM)</label>
+                    <div class="input-group">
+                        <input type="number" name="default_interval_km" id="default_interval_km"
+                               value="{{ old('default_interval_km') }}"
+                               placeholder="Contoh: 3000"
+                               min="100"
+                               class="form-control font-monospace">
+                        <span class="input-group-text small text-secondary">KM</span>
                     </div>
                 </div>
 
-                <div>
-                    <label for="description" class="block text-sm font-medium text-gray-700">Deskripsi / Rekomendasi Pabrikan</label>
+                <div class="col-12 col-md-6">
+                    <label for="default_interval_days" class="form-label small fw-semibold">Interval Bawaan (Hari)</label>
+                    <div class="input-group">
+                        <input type="number" name="default_interval_days" id="default_interval_days"
+                               value="{{ old('default_interval_days') }}"
+                               placeholder="Contoh: 90"
+                               min="1"
+                               class="form-control font-monospace">
+                        <span class="input-group-text small text-secondary">Hari</span>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <label for="description" class="form-label small fw-semibold">Deskripsi / Rekomendasi Pabrikan</label>
                     <textarea name="description" id="description" rows="2"
                               placeholder="Keterangan cara cek atau tipe suku cadang rekomendasi"
-                              class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">{{ old('description') }}</textarea>
+                              class="form-control">{{ old('description') }}</textarea>
                 </div>
 
-                <div>
-                    <label class="inline-flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" name="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }}
-                               class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
-                        <span class="text-sm font-medium text-gray-700">Aktif</span>
-                    </label>
+                <div class="col-12">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" name="is_active" id="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }}>
+                        <label class="form-check-label small fw-semibold" for="is_active">Aktif</label>
+                    </div>
                 </div>
             </div>
 
-            <div class="flex items-center gap-3 mt-6 pt-6 border-t border-gray-100">
-                <button type="submit"
-                        class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition">
+            <div class="d-flex align-items-center gap-2 mt-4 pt-3 border-top">
+                <button type="submit" class="btn btn-primary px-4">
                     Simpan Komponen
                 </button>
-                <a href="{{ route('maintenance-items.index') }}"
-                   class="text-gray-600 hover:text-gray-800 text-sm font-medium px-4 py-2.5 rounded-lg border border-gray-200 hover:border-gray-300 transition">
+                <a href="{{ route('maintenance-items.index') }}" class="btn btn-outline-secondary px-3">
                     Batal
                 </a>
             </div>

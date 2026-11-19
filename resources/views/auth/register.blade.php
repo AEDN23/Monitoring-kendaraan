@@ -3,14 +3,14 @@
 @section('title', 'Daftar')
 
 @section('content')
-    <h2 class="mb-6 text-xl font-semibold text-gray-800">Buat akun baru</h2>
+    <h5 class="mb-4 fw-bold text-dark">Buat akun baru</h5>
 
-    <form method="POST" action="{{ route('register') }}" class="space-y-5">
+    <form method="POST" action="{{ route('register') }}">
         @csrf
 
         {{-- Name --}}
-        <div>
-            <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
+        <div class="mb-3">
+            <label for="name" class="form-label small fw-semibold">Nama Lengkap</label>
             <input
                 id="name"
                 type="text"
@@ -19,19 +19,17 @@
                 required
                 autofocus
                 autocomplete="name"
-                class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400
-                       focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
-                       @error('name') border-red-400 bg-red-50 @enderror"
+                class="form-control @error('name') is-invalid @enderror"
                 placeholder="John Doe"
             >
             @error('name')
-                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                <div class="invalid-feedback">{{ $message }}</div>
             @enderror
         </div>
 
         {{-- Email --}}
-        <div>
-            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+        <div class="mb-3">
+            <label for="email" class="form-label small fw-semibold">Email</label>
             <input
                 id="email"
                 type="email"
@@ -39,63 +37,53 @@
                 value="{{ old('email') }}"
                 required
                 autocomplete="email"
-                class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400
-                       focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
-                       @error('email') border-red-400 bg-red-50 @enderror"
+                class="form-control @error('email') is-invalid @enderror"
                 placeholder="nama@email.com"
             >
             @error('email')
-                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                <div class="invalid-feedback">{{ $message }}</div>
             @enderror
         </div>
 
         {{-- Password --}}
-        <div>
-            <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+        <div class="mb-3">
+            <label for="password" class="form-label small fw-semibold">Password</label>
             <input
                 id="password"
                 type="password"
                 name="password"
                 required
                 autocomplete="new-password"
-                class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900
-                       focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
-                       @error('password') border-red-400 bg-red-50 @enderror"
+                class="form-control @error('password') is-invalid @enderror"
                 placeholder="Minimal 8 karakter"
             >
             @error('password')
-                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                <div class="invalid-feedback">{{ $message }}</div>
             @enderror
         </div>
 
         {{-- Confirm Password --}}
-        <div>
-            <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-1">Konfirmasi Password</label>
+        <div class="mb-4">
+            <label for="password_confirmation" class="form-label small fw-semibold">Konfirmasi Password</label>
             <input
                 id="password_confirmation"
                 type="password"
                 name="password_confirmation"
                 required
                 autocomplete="new-password"
-                class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900
-                       focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                class="form-control"
                 placeholder="Ulangi password"
             >
         </div>
 
         {{-- Submit --}}
-        <button
-            type="submit"
-            class="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white
-                   hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2
-                   transition-colors"
-        >
+        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold mb-3">
             Daftar Sekarang
         </button>
     </form>
 
-    <p class="mt-6 text-center text-sm text-gray-500">
+    <div class="text-center small text-secondary">
         Sudah punya akun?
-        <a href="{{ route('login') }}" class="font-medium text-indigo-600 hover:text-indigo-500">Masuk di sini</a>
-    </p>
+        <a href="{{ route('login') }}" class="text-decoration-none fw-semibold">Masuk di sini</a>
+    </div>
 @endsection

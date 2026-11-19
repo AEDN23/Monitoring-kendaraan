@@ -4,15 +4,14 @@
 @section('header', 'Laporan Biaya & Pengeluaran')
 
 @section('content')
-<div class="space-y-6">
+<div class="container-fluid p-0">
 
     {{-- ── Filter Form ─────────────────────────────────────────── --}}
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-        <form method="GET" action="{{ route('reports.index') }}" class="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
-            <div>
-                <label for="vehicle_id" class="block text-xs font-semibold text-gray-600 uppercase tracking-wider">Kendaraan</label>
-                <select name="vehicle_id" id="vehicle_id"
-                        class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+    <div class="card border-0 shadow-sm rounded-3 p-4 mb-4">
+        <form method="GET" action="{{ route('reports.index') }}" class="row g-3 align-items-end">
+            <div class="col-12 col-sm-6 col-lg-3">
+                <label for="vehicle_id" class="form-label small fw-semibold text-secondary">Kendaraan</label>
+                <select name="vehicle_id" id="vehicle_id" class="form-select form-select-sm">
                     <option value="">Semua Kendaraan</option>
                     @foreach ($vehicles as $v)
                         <option value="{{ $v->id }}" {{ $vehicleId == $v->id ? 'selected' : '' }}>
@@ -22,8 +21,8 @@
                 </select>
             </div>
 
-            <div>
-                <label for="month" class="block text-xs font-semibold text-gray-600 uppercase tracking-wider">Bulan</label>
+            <div class="col-12 col-sm-6 col-lg-3">
+                <label for="month" class="form-label small fw-semibold text-secondary">Bulan</label>
                 @php
                     $months = [
                         1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
@@ -31,8 +30,7 @@
                         9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
                     ];
                 @endphp
-                <select name="month" id="month"
-                        class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                <select name="month" id="month" class="form-select form-select-sm">
                     @foreach ($months as $num => $name)
                         <option value="{{ $num }}" {{ $month == $num ? 'selected' : '' }}>
                             {{ $name }}
@@ -41,10 +39,9 @@
                 </select>
             </div>
 
-            <div>
-                <label for="year" class="block text-xs font-semibold text-gray-600 uppercase tracking-wider">Tahun</label>
-                <select name="year" id="year"
-                        class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+            <div class="col-12 col-sm-6 col-lg-3">
+                <label for="year" class="form-label small fw-semibold text-secondary">Tahun</label>
+                <select name="year" id="year" class="form-select form-select-sm">
                     @for ($y = date('Y'); $y >= date('Y') - 5; $y--)
                         <option value="{{ $y }}" {{ $year == $y ? 'selected' : '' }}>
                             {{ $y }}
@@ -53,129 +50,142 @@
                 </select>
             </div>
 
-            <div class="flex gap-2">
-                <button type="submit"
-                        class="w-full rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 transition">
-                    Terapkan Filter
+            <div class="col-12 col-sm-6 col-lg-3">
+                <button type="submit" class="btn btn-primary btn-sm w-100">
+                    <i class="bi bi-funnel me-1"></i> Terapkan Filter
                 </button>
             </div>
         </form>
     </div>
 
     {{-- ── Kartu Ringkasan Periode ─────────────────────────────── --}}
-    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="row g-3 mb-4">
         {{-- Grand Total --}}
-        <div class="rounded-xl bg-indigo-900 text-white p-5 shadow-sm">
-            <span class="text-xs uppercase tracking-wider text-indigo-300">Total Pengeluaran</span>
-            <p class="mt-1 text-2xl font-black">Rp {{ number_format($grandTotal, 0, ',', '.') }}</p>
-            <p class="mt-2 text-2xs text-indigo-200">{{ $months[$month] }} {{ $year }}</p>
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="card border-0 shadow-sm rounded-3 p-3 text-white h-100" style="background-color: var(--sidebar-bg);">
+                <div class="text-uppercase small text-white-50" style="font-size: 0.75rem;">Total Pengeluaran</div>
+                <div class="fs-4 fw-bold font-monospace mt-1">Rp {{ number_format($grandTotal, 0, ',', '.') }}</div>
+                <div class="text-white-50 small mt-1" style="font-size: 0.75rem;">{{ $months[$month] }} {{ $year }}</div>
+            </div>
         </div>
 
         {{-- Biaya BBM --}}
-        <div class="rounded-xl bg-white border border-gray-100 p-5 shadow-sm">
-            <span class="text-xs uppercase tracking-wider text-gray-400 font-semibold">Total Biaya BBM</span>
-            <p class="mt-1 text-2xl font-bold text-amber-600">Rp {{ number_format($fuelStats['total_amount'], 0, ',', '.') }}</p>
-            <p class="mt-2 text-2xs text-gray-500">{{ number_format($fuelStats['total_liter'], 2, ',', '.') }} Liter &bull; {{ $fuelStats['total_fill'] }} kali isi</p>
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="card border-0 shadow-sm rounded-3 p-3 h-100">
+                <div class="text-uppercase small text-secondary fw-semibold" style="font-size: 0.75rem;">Total Biaya BBM</div>
+                <div class="fs-4 fw-bold text-warning font-monospace mt-1">Rp {{ number_format($fuelStats['total_amount'], 0, ',', '.') }}</div>
+                <div class="text-muted small mt-1" style="font-size: 0.75rem;">{{ number_format($fuelStats['total_liter'], 2, ',', '.') }} L &bull; {{ $fuelStats['total_fill'] }}x isi</div>
+            </div>
         </div>
 
         {{-- Biaya Suku Cadang --}}
-        <div class="rounded-xl bg-white border border-gray-100 p-5 shadow-sm">
-            <span class="text-xs uppercase tracking-wider text-gray-400 font-semibold">Suku Cadang Servis</span>
-            <p class="mt-1 text-2xl font-bold text-gray-800">Rp {{ number_format($serviceStats['total_parts'], 0, ',', '.') }}</p>
-            <p class="mt-2 text-2xs text-gray-500">Biaya suku cadang/barang</p>
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="card border-0 shadow-sm rounded-3 p-3 h-100">
+                <div class="text-uppercase small text-secondary fw-semibold" style="font-size: 0.75rem;">Suku Cadang Servis</div>
+                <div class="fs-4 fw-bold text-dark font-monospace mt-1">Rp {{ number_format($serviceStats['total_parts'], 0, ',', '.') }}</div>
+                <div class="text-muted small mt-1" style="font-size: 0.75rem;">Biaya suku cadang/barang</div>
+            </div>
         </div>
 
         {{-- Biaya Jasa Servis --}}
-        <div class="rounded-xl bg-white border border-gray-100 p-5 shadow-sm">
-            <span class="text-xs uppercase tracking-wider text-gray-400 font-semibold">Biaya Jasa Bengkel</span>
-            <p class="mt-1 text-2xl font-bold text-emerald-600">Rp {{ number_format($serviceStats['total_labor'], 0, ',', '.') }}</p>
-            <p class="mt-2 text-2xs text-gray-500">{{ $serviceStats['total_visits'] }} kunjungan servis</p>
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="card border-0 shadow-sm rounded-3 p-3 h-100">
+                <div class="text-uppercase small text-secondary fw-semibold" style="font-size: 0.75rem;">Biaya Jasa Bengkel</div>
+                <div class="fs-4 fw-bold text-success font-monospace mt-1">Rp {{ number_format($serviceStats['total_labor'], 0, ',', '.') }}</div>
+                <div class="text-muted small mt-1" style="font-size: 0.75rem;">{{ $serviceStats['total_visits'] }} kunjungan servis</div>
+            </div>
         </div>
     </div>
 
     {{-- ── 2 Kolom Rincian Transaksi ───────────────────────────── --}}
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
+    <div class="row g-4">
         {{-- Rincian BBM --}}
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-sm font-bold text-gray-900">Transaksi BBM Periode Ini</h2>
-                <span class="text-xs text-gray-500">{{ $fuelTransactions->count() }} transaksi</span>
-            </div>
-
-            @if($fuelTransactions->isEmpty())
-                <p class="text-xs text-gray-400 italic py-4 text-center">Tidak ada transaksi BBM pada periode ini.</p>
-            @else
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-100 text-left text-xs">
-                        <thead>
-                            <tr class="text-gray-400 uppercase tracking-wider">
-                                <th class="py-2">Tgl</th>
-                                <th class="py-2">Kendaraan</th>
-                                <th class="py-2">BBM</th>
-                                <th class="py-2 text-right">Liter</th>
-                                <th class="py-2 text-right">Total</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-50">
-                            @foreach ($fuelTransactions as $ft)
-                                <tr>
-                                    <td class="py-2 font-medium text-gray-800">{{ $ft->transaction_at->format('d/m') }}</td>
-                                    <td class="py-2 text-gray-700">{{ $ft->vehicle->name ?? '-' }}</td>
-                                    <td class="py-2 text-gray-600">{{ $ft->fuelType->name ?? '-' }}</td>
-                                    <td class="py-2 text-right font-mono">{{ number_format($ft->volume_liter, 2, ',', '.') }} L</td>
-                                    <td class="py-2 text-right font-mono font-semibold text-gray-900">Rp {{ number_format($ft->total_amount, 0, ',', '.') }}</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+        <div class="col-12 col-lg-6">
+            <div class="card border-0 shadow-sm rounded-3 p-4 h-100">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h6 class="fw-bold text-dark mb-0">Transaksi BBM Periode Ini</h6>
+                    <span class="badge bg-light text-secondary border">{{ $fuelTransactions->count() }} transaksi</span>
                 </div>
-            @endif
+
+                @if($fuelTransactions->isEmpty())
+                    <p class="text-secondary small fst-italic py-4 text-center mb-0">Tidak ada transaksi BBM pada periode ini.</p>
+                @else
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 small">
+                            <thead class="table-light">
+                                <tr class="text-secondary small text-uppercase">
+                                    <th class="ps-2 py-2">Tgl</th>
+                                    <th class="py-2">Kendaraan</th>
+                                    <th class="py-2">BBM</th>
+                                    <th class="py-2 text-end">Liter</th>
+                                    <th class="pe-2 py-2 text-end">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($fuelTransactions as $ft)
+                                    <tr>
+                                        <td class="ps-2 py-2 fw-semibold text-dark">{{ $ft->transaction_at->format('d/m') }}</td>
+                                        <td class="py-2 text-secondary">{{ $ft->vehicle->name ?? '-' }}</td>
+                                        <td class="py-2">
+                                            <span class="badge bg-warning bg-opacity-10 text-dark border border-warning border-opacity-25">
+                                                {{ $ft->fuelType->name ?? '-' }}
+                                            </span>
+                                        </td>
+                                        <td class="py-2 text-end font-monospace text-secondary">{{ number_format($ft->volume_liter, 2, ',', '.') }} L</td>
+                                        <td class="pe-2 py-2 text-end font-monospace fw-bold text-dark">Rp {{ number_format($ft->total_amount, 0, ',', '.') }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+            </div>
         </div>
 
         {{-- Rincian Servis --}}
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-sm font-bold text-gray-900">Transaksi Servis Periode Ini</h2>
-                <span class="text-xs text-gray-500">{{ $maintenanceRecords->count() }} kunjungan</span>
-            </div>
-
-            @if($maintenanceRecords->isEmpty())
-                <p class="text-xs text-gray-400 italic py-4 text-center">Tidak ada servis pada periode ini.</p>
-            @else
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-100 text-left text-xs">
-                        <thead>
-                            <tr class="text-gray-400 uppercase tracking-wider">
-                                <th class="py-2">Tgl</th>
-                                <th class="py-2">Kendaraan</th>
-                                <th class="py-2">Bengkel</th>
-                                <th class="py-2 text-right">Part + Jasa</th>
-                                <th class="py-2 text-right">Total</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-50">
-                            @foreach ($maintenanceRecords as $mr)
-                                <tr>
-                                    <td class="py-2 font-medium text-gray-800">{{ $mr->service_at->format('d/m') }}</td>
-                                    <td class="py-2 text-gray-700">{{ $mr->vehicle->name ?? '-' }}</td>
-                                    <td class="py-2 text-gray-600">{{ $mr->workshop_name ?? '-' }}</td>
-                                    <td class="py-2 text-right font-mono text-gray-500 text-2xs">
-                                        {{ number_format($mr->total_parts_cost, 0, ',', '.') }} + {{ number_format($mr->total_labor_cost, 0, ',', '.') }}
-                                    </td>
-                                    <td class="py-2 text-right font-mono font-semibold text-gray-900">
-                                        <a href="{{ route('maintenance-records.show', $mr) }}" class="text-indigo-600 hover:underline">
-                                            Rp {{ number_format($mr->total_cost, 0, ',', '.') }}
-                                        </a>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+        <div class="col-12 col-lg-6">
+            <div class="card border-0 shadow-sm rounded-3 p-4 h-100">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h6 class="fw-bold text-dark mb-0">Transaksi Servis Periode Ini</h6>
+                    <span class="badge bg-light text-secondary border">{{ $maintenanceRecords->count() }} kunjungan</span>
                 </div>
-            @endif
-        </div>
 
+                @if($maintenanceRecords->isEmpty())
+                    <p class="text-secondary small fst-italic py-4 text-center mb-0">Tidak ada servis pada periode ini.</p>
+                @else
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 small">
+                            <thead class="table-light">
+                                <tr class="text-secondary small text-uppercase">
+                                    <th class="ps-2 py-2">Tgl</th>
+                                    <th class="py-2">Kendaraan</th>
+                                    <th class="py-2">Bengkel</th>
+                                    <th class="py-2 text-end">Part + Jasa</th>
+                                    <th class="pe-2 py-2 text-end">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($maintenanceRecords as $mr)
+                                    <tr>
+                                        <td class="ps-2 py-2 fw-semibold text-dark">{{ $mr->service_at->format('d/m') }}</td>
+                                        <td class="py-2 text-secondary">{{ $mr->vehicle->name ?? '-' }}</td>
+                                        <td class="py-2 text-secondary">{{ $mr->workshop_name ?? '-' }}</td>
+                                        <td class="py-2 text-end font-monospace text-muted" style="font-size: 0.75rem;">
+                                            {{ number_format($mr->total_parts_cost, 0, ',', '.') }} + {{ number_format($mr->total_labor_cost, 0, ',', '.') }}
+                                        </td>
+                                        <td class="pe-2 py-2 text-end font-monospace fw-bold">
+                                            <a href="{{ route('maintenance-records.show', $mr) }}" class="text-decoration-none text-primary">
+                                                Rp {{ number_format($mr->total_cost, 0, ',', '.') }}
+                                            </a>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+            </div>
+        </div>
     </div>
 
 </div>

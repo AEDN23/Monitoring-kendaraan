@@ -4,66 +4,65 @@
 @section('header', 'Pengaturan Jenis BBM')
 
 @section('content')
-<div class="max-w-3xl mx-auto space-y-6">
+<div class="container-fluid p-0" style="max-width: 800px;">
 
-    <div class="flex items-center justify-between">
+    <div class="d-flex align-items-center justify-content-between mb-4">
         <div>
-            <h1 class="text-xl font-bold text-gray-800">Master Jenis BBM</h1>
-            <p class="text-xs text-gray-500 mt-0.5">Daftar bahan bakar yang dapat dipilih saat transaksi pengisian BBM</p>
+            <h4 class="fw-bold text-dark mb-0">Master Jenis BBM</h4>
+            <div class="text-secondary small">Daftar bahan bakar yang dapat dipilih saat transaksi pengisian BBM</div>
         </div>
-        <a href="{{ route('fuel-types.create') }}"
-           class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 transition">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-            </svg>
-            Tambah Jenis BBM
+        <a href="{{ route('fuel-types.create') }}" class="btn btn-primary d-inline-flex align-items-center gap-2">
+            <i class="bi bi-plus-lg"></i>
+            <span>Tambah Jenis BBM</span>
         </a>
     </div>
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <table class="min-w-full divide-y divide-gray-200 text-left text-xs">
-            <thead class="bg-gray-50">
-                <tr class="text-gray-500 uppercase tracking-wider font-semibold">
-                    <th class="py-3 px-4">Nama BBM</th>
-                    <th class="py-3 px-4">Status</th>
-                    <th class="py-3 px-4 text-right">Aksi</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100">
-                @foreach ($fuelTypes as $ft)
-                    <tr class="hover:bg-gray-50/50">
-                        <td class="py-3.5 px-4 font-semibold text-gray-900">
-                            {{ $ft->name }}
-                        </td>
-                        <td class="py-3.5 px-4">
-                            @if($ft->is_active)
-                                <span class="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700">Aktif</span>
-                            @else
-                                <span class="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">Nonaktif</span>
-                            @endif
-                        </td>
-                        <td class="py-3.5 px-4 text-right">
-                            <div class="flex items-center justify-end gap-3">
-                                <a href="{{ route('fuel-types.edit', $ft) }}" class="text-indigo-600 hover:text-indigo-900 font-medium">
-                                    Edit
-                                </a>
-                                <form action="{{ route('fuel-types.destroy', $ft) }}" method="POST" class="inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="text-gray-500 hover:text-gray-700 font-medium">
-                                        {{ $ft->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
+    <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr class="small text-secondary text-uppercase">
+                        <th class="ps-3 py-3">Nama BBM</th>
+                        <th class="py-3">Status</th>
+                        <th class="pe-3 py-3 text-end">Aksi</th>
                     </tr>
-                @endforeach
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach ($fuelTypes as $ft)
+                        <tr>
+                            <td class="ps-3 py-3 fw-semibold text-dark">
+                                {{ $ft->name }}
+                            </td>
+                            <td class="py-3">
+                                @if($ft->is_active)
+                                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">Aktif</span>
+                                @else
+                                    <span class="badge bg-secondary bg-opacity-10 text-secondary px-2 py-1">Nonaktif</span>
+                                @endif
+                            </td>
+                            <td class="pe-3 py-3 text-end">
+                                <div class="d-inline-flex align-items-center gap-2">
+                                    <a href="{{ route('fuel-types.edit', $ft) }}" class="btn btn-sm btn-light py-1 px-2 text-primary">
+                                        Edit
+                                    </a>
+                                    <form action="{{ route('fuel-types.destroy', $ft) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-light py-1 px-2 text-secondary">
+                                            {{ $ft->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
 
         @if($fuelTypes->hasPages())
-            <div class="p-4 border-t border-gray-100">
-                {{ $fuelTypes->links() }}
+            <div class="p-3 border-top">
+                {{ $fuelTypes->links('pagination::bootstrap-5') }}
             </div>
         @endif
     </div>
