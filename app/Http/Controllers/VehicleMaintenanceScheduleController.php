@@ -60,6 +60,9 @@ class VehicleMaintenanceScheduleController extends Controller
 
         if (! $vehicle || ! $vehicle->exists) {
             $vehicle = $vehicles->first();
+        } else {
+            // Reuse the instance that already has max odometer loaded
+            $vehicle = $vehicles->firstWhere('id', $vehicle->id) ?? $vehicle;
         }
 
         if (! $vehicle) {

@@ -25,16 +25,21 @@ class DashboardController extends Controller
 
         // ── Statistik ────────────────────────────────────────
         $totalVehicles = $vehicles->count();
+        $vehicleIds = $vehicles->pluck('id');
 
-        $totalFuelThisMonth = FuelTransaction::whereIn('vehicle_id', $vehicles->pluck('id'))
-            ->whereYear('transaction_at', now()->year)
-            ->whereMonth('transaction_at', now()->month)
-            ->sum('total_amount');
+        $totalFuelThisMonth = $vehicleIds->isNotEmpty()
+            ? FuelTransaction::whereIn('vehicle_id', $vehicleIds)
+                ->whereYear('transaction_at', now()->year)
+                ->whereMonth('transaction_at', now()->month)
+                ->sum('total_amount')
+            : 0;
 
-        $totalServiceThisMonth = MaintenanceRecord::whereIn('vehicle_id', $vehicles->pluck('id'))
-            ->whereYear('service_at', now()->year)
-            ->whereMonth('service_at', now()->month)
-            ->sum('total_cost');
+        $totalServiceThisMonth = $vehicleIds->isNotEmpty()
+            ? MaintenanceRecord::whereIn('vehicle_id', $vehicleIds)
+                ->whereYear('service_at', now()->year)
+                ->whereMonth('service_at', now()->month)
+                ->sum('total_cost')
+            : 0;
 
         // ── Status perawatan per kendaraan ───────────────────
         $vehicleStatuses = $vehicles->map(function (Vehicle $vehicle) {

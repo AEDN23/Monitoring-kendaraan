@@ -80,10 +80,13 @@ class Vehicle extends Model
 
     public function latestOdometerKm(): ?float
     {
-        if (isset($this->attributes['max_fuel_odometer']) || isset($this->attributes['max_service_odometer'])) {
+        if (array_key_exists('max_fuel_odometer', $this->attributes) || array_key_exists('max_service_odometer', $this->attributes)) {
+            $fuelOdo = $this->attributes['max_fuel_odometer'] ?? null;
+            $serviceOdo = $this->attributes['max_service_odometer'] ?? null;
+
             return (float) max(
-                $this->attributes['max_fuel_odometer'] ?? $this->initial_odometer_km,
-                $this->attributes['max_service_odometer'] ?? $this->initial_odometer_km,
+                $fuelOdo ?? $this->initial_odometer_km,
+                $serviceOdo ?? $this->initial_odometer_km,
                 $this->initial_odometer_km
             );
         }

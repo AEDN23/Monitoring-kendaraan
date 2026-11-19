@@ -73,7 +73,13 @@ class MaintenanceRecordController extends Controller
     {
         $userId = Auth::id();
 
-        $vehicleIds = Vehicle::where('user_id', $userId)->pluck('id');
+        $vehicles = Vehicle::where('user_id', $userId)->orderBy('name')->get();
+        $vehicleIds = $vehicles->pluck('id');
+
+        if ($vehicleIds->isEmpty()) {
+            $records = MaintenanceRecord::whereRaw('1=0')->paginate(15);
+            return view('maintenance-records.index', compact('records', 'vehicles'));
+        }
 
         $query = MaintenanceRecord::with(['vehicle', 'items.maintenanceItem'])
             ->whereIn('vehicle_id', $vehicleIds)
@@ -84,8 +90,6 @@ class MaintenanceRecordController extends Controller
         }
 
         $records = $query->paginate(15)->withQueryString();
-
-        $vehicles = Vehicle::where('user_id', $userId)->orderBy('name')->get();
 
         return view('maintenance-records.index', compact('records', 'vehicles'));
     }

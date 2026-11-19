@@ -16,6 +16,11 @@ class FuelTransactionController extends Controller
         $vehicles = auth()->user()->vehicles()->orderBy('name')->get();
         $userVehicleIds = $vehicles->pluck('id');
 
+        if ($userVehicleIds->isEmpty()) {
+            $fuelTransactions = FuelTransaction::whereRaw('1=0')->paginate(15);
+            return view('fuel-transactions.index', compact('fuelTransactions', 'vehicles'));
+        }
+
         $query = FuelTransaction::with(['vehicle', 'fuelType'])
             ->whereIn('vehicle_id', $userVehicleIds)
             ->orderBy('transaction_at', 'desc');
