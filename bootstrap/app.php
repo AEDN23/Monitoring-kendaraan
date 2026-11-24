@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
             \App\Http\Middleware\AutoLoginDefaultUser::class,
+            \App\Http\Middleware\EnsureActiveVehicle::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

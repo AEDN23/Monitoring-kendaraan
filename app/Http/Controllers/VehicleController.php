@@ -12,6 +12,7 @@ class VehicleController extends Controller
 
     public function index()
     {
+        // withLatestOdometer tidak di-cache karena pagination perlu fresh count
         $vehicles = auth()->user()
             ->vehicles()
             ->withLatestOdometer()
@@ -34,13 +35,18 @@ class VehicleController extends Controller
     {
         $data = $r->validate($this->rules());
 
-        $data['user_id']    = auth()->id();
-        $data['is_active']  = true;
+        $data['user_id']   = auth()->id();
+        $data['is_active'] = true;
 
-        Vehicle::create($data);
+        $vehicle = Vehicle::create($data);
 
-        return redirect()->route('vehicles.index')
-            ->with('success', 'Kendaraan berhasil ditambahkan.');
+        // Langsung aktifkan kendaraan yang baru dibuat
+        session(['active_vehicle_id' => $vehicle->id]);
+
+        $this->clearVehicleCache();
+
+        return redirect()->route('dashboard')
+            ->with('success', "Kendaraan {$vehicle->name} berhasil ditambahkan dan aktif.");
     }
 
     // ── Show ─────────────────────────────────────────────────────────────────
@@ -49,61 +55,63 @@ class VehicleController extends Controller
     {
         $this->authorizeOwner($vehicle);
 
+        // Load semua relasi dalam satu panggil — satu koneksi
+        $vehicle->loadMax('fuelTransactions as max_fuel_odometer', 'odometer_km');
+        $vehicle->loadMax('maintenanceRecords as max_service_odometer', 'odometer_km');
         $vehicle->load([
             'maintenanceSchedules.maintenanceItem',
             'fuelTransactions.fuelType',
-            'maintenanceRecords.maintenanceItem',
+            'maintenanceRecords',
         ]);
 
         $currentOdometer = $vehicle->latestOdometerKm();
 
-        // Statistik BBM bulan ini
-        $fuelThisMonth = $vehicle->fuelTransactions()
-            ->whereMonth('transaction_at', now()->month)
-            ->whereYear('transaction_at', now()->year)
-            ->selectRaw('SUM(total_amount) as total_cost, SUM(volume_liter) as total_liter')
-            ->first();
+        $now = now();
 
-        // Statistik servis bulan ini
-        $serviceThisMonth = $vehicle->maintenanceRecords()
-            ->whereMonth('service_at', now()->month)
-            ->whereYear('service_at', now()->year)
-            ->selectRaw('SUM(total_cost) as total_cost, COUNT(*) as total_count')
-            ->first();
+        // Statistik BBM & servis bulan ini — dari relasi yang sudah di-load
+        $fuelThisMonth = $vehicle->fuelTransactions
+            ->where('transaction_at', '>=', $now->copy()->startOfMonth())
+            ->where('transaction_at', '<=', $now->copy()->endOfMonth());
 
-        // Jadwal perawatan dengan status
-        $schedules = $vehicle->maintenanceSchedules()
-            ->with('maintenanceItem')
+        $fuelStats = (object)[
+            'total_cost'  => $fuelThisMonth->sum('total_amount'),
+            'total_liter' => $fuelThisMonth->sum('volume_liter'),
+        ];
+
+        $serviceThisMonth = $vehicle->maintenanceRecords
+            ->where('service_at', '>=', $now->copy()->startOfMonth()->toDateString())
+            ->where('service_at', '<=', $now->copy()->endOfMonth()->toDateString());
+
+        $serviceStats = (object)[
+            'total_cost'  => $serviceThisMonth->sum('total_cost'),
+            'total_count' => $serviceThisMonth->count(),
+        ];
+
+        // Jadwal perawatan dengan status — in-memory, zero extra queries
+        $schedules = $vehicle->maintenanceSchedules
             ->where('is_active', true)
-            ->get()
             ->map(function ($schedule) use ($currentOdometer) {
-                $schedule->computed_status   = $schedule->status((float) $currentOdometer);
-                $schedule->computed_next_km  = $schedule->nextDueKm();
+                $schedule->computed_status    = $schedule->status((float) $currentOdometer);
+                $schedule->computed_next_km   = $schedule->nextDueKm();
                 $schedule->computed_next_date = $schedule->nextDueDate();
                 return $schedule;
             });
 
-        // 5 Transaksi BBM terakhir
-        $lastFuelTransactions = $vehicle->fuelTransactions()
-            ->with('fuelType')
-            ->orderBy('transaction_at', 'desc')
-            ->orderBy('id', 'desc')
-            ->limit(5)
-            ->get();
+        // 5 Transaksi BBM & servis terakhir — dari koleksi yang sudah di-load
+        $lastFuelTransactions = $vehicle->fuelTransactions
+            ->sortByDesc('transaction_at')
+            ->take(5);
 
-        // 5 Servis terakhir
-        $lastMaintenanceRecords = $vehicle->maintenanceRecords()
-            ->with('maintenanceItem', 'items')
-            ->orderBy('service_at', 'desc')
-            ->orderBy('id', 'desc')
-            ->limit(5)
-            ->get();
+        $lastMaintenanceRecords = $vehicle->maintenanceRecords
+            ->sortByDesc('service_at')
+            ->take(5)
+            ->load('items');
 
         return view('vehicles.show', compact(
             'vehicle',
             'currentOdometer',
-            'fuelThisMonth',
-            'serviceThisMonth',
+            'fuelStats',
+            'serviceStats',
             'schedules',
             'lastFuelTransactions',
             'lastMaintenanceRecords',
@@ -129,6 +137,8 @@ class VehicleController extends Controller
 
         $vehicle->update($data);
 
+        $this->clearVehicleCache();
+
         return redirect()->route('vehicles.index')
             ->with('success', 'Kendaraan berhasil diperbarui.');
     }
@@ -139,7 +149,13 @@ class VehicleController extends Controller
     {
         $this->authorizeOwner($vehicle);
 
+        if (session('active_vehicle_id') == $vehicle->id) {
+            session()->forget('active_vehicle_id');
+        }
+
         $vehicle->delete();
+
+        $this->clearVehicleCache();
 
         return redirect()->route('vehicles.index')
             ->with('success', 'Kendaraan berhasil dihapus.');

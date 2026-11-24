@@ -31,6 +31,8 @@ class FuelTypeController extends Controller
             'is_active' => $request->boolean('is_active', true),
         ]);
 
+        \Illuminate\Support\Facades\Cache::forget('fuel_types_active');
+
         return redirect()->route('fuel-types.index')
             ->with('success', 'Jenis BBM berhasil ditambahkan.');
     }
@@ -52,6 +54,8 @@ class FuelTypeController extends Controller
             'is_active' => $request->boolean('is_active', true),
         ]);
 
+        \Illuminate\Support\Facades\Cache::forget('fuel_types_active');
+
         return redirect()->route('fuel-types.index')
             ->with('success', 'Jenis BBM berhasil diperbarui.');
     }
@@ -62,6 +66,7 @@ class FuelTypeController extends Controller
     public function destroy(FuelType $fuelType)
     {
         $fuelType->update(['is_active' => ! $fuelType->is_active]);
+        \Illuminate\Support\Facades\Cache::forget('fuel_types_active');
 
         $status = $fuelType->is_active ? 'diaktifkan' : 'dinonaktifkan';
 

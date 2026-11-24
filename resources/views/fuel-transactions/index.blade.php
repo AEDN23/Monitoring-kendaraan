@@ -11,21 +11,21 @@
         {{-- Filter Kendaraan --}}
         <form method="GET" action="{{ route('fuel-transactions.index') }}" class="d-flex align-items-center gap-2">
             <select name="vehicle_id" onchange="this.form.submit()" class="form-select form-select-sm" style="min-width: 220px;">
-                <option value="">Semua Kendaraan</option>
+                <option value="all" {{ ($selectedVehicleId == 'all') ? 'selected' : '' }}>Semua Kendaraan</option>
                 @foreach ($vehicles as $v)
-                    <option value="{{ $v->id }}" {{ request('vehicle_id') == $v->id ? 'selected' : '' }}>
+                    <option value="{{ $v->id }}" {{ ($selectedVehicleId == $v->id) ? 'selected' : '' }}>
                         {{ $v->name }} {{ $v->license_plate ? "({$v->license_plate})" : '' }}
                     </option>
                 @endforeach
             </select>
-            @if(request('vehicle_id'))
-                <a href="{{ route('fuel-transactions.index') }}" class="btn btn-sm btn-outline-secondary">
+            @if(request()->has('vehicle_id') && request('vehicle_id') != session('active_vehicle_id'))
+                <a href="{{ route('fuel-transactions.index') }}" class="btn btn-sm btn-outline-secondary" title="Kembali ke kendaraan aktif">
                     Reset
                 </a>
             @endif
         </form>
 
-        <a href="{{ route('fuel-transactions.create', ['vehicle_id' => request('vehicle_id')]) }}" class="btn btn-primary d-inline-flex align-items-center gap-2">
+        <a href="{{ route('fuel-transactions.create', ['vehicle_id' => ($selectedVehicleId && $selectedVehicleId !== 'all') ? $selectedVehicleId : null]) }}" class="btn btn-primary d-inline-flex align-items-center gap-2">
             <i class="bi bi-plus-lg"></i>
             <span>Catat Pengisian BBM</span>
         </a>

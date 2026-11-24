@@ -9,6 +9,7 @@ use App\Models\Vehicle;
 use App\Models\VehicleMaintenanceSchedule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class MaintenanceRecordController extends Controller
@@ -17,7 +18,8 @@ class MaintenanceRecordController extends Controller
 
     private function authorizeRecord(MaintenanceRecord $record): void
     {
-        abort_unless($record->vehicle->user_id === Auth::id(), 403);
+        $userVehicleIds = $this->cachedUserVehicles()->pluck('id');
+        abort_unless($userVehicleIds->contains($record->vehicle_id), 403);
     }
 
     private function validateRecord(Request $r): array
@@ -67,13 +69,19 @@ class MaintenanceRecordController extends Controller
         }
     }
 
+    private function cachedMaintenanceItems()
+    {
+        return MaintenanceItem::where('is_active', true)
+            ->orderBy('category')
+            ->orderBy('name')
+            ->get();
+    }
+
     // ── Actions ───────────────────────────────────────────────────────────────
 
     public function index(Request $r)
     {
-        $userId = Auth::id();
-
-        $vehicles = Vehicle::where('user_id', $userId)->orderBy('name')->get();
+        $vehicles   = $this->cachedUserVehicles();
         $vehicleIds = $vehicles->pluck('id');
 
         if ($vehicleIds->isEmpty()) {
@@ -85,24 +93,24 @@ class MaintenanceRecordController extends Controller
             ->whereIn('vehicle_id', $vehicleIds)
             ->orderBy('service_at', 'desc');
 
-        if ($r->filled('vehicle_id')) {
-            $query->where('vehicle_id', $r->vehicle_id);
+        $selectedVehicleId = $r->has('vehicle_id')
+            ? $r->input('vehicle_id')
+            : session('active_vehicle_id');
+
+        if ($selectedVehicleId && $selectedVehicleId !== 'all') {
+            $query->where('vehicle_id', $selectedVehicleId);
         }
 
         $records = $query->paginate(15)->withQueryString();
 
-        return view('maintenance-records.index', compact('records', 'vehicles'));
+        return view('maintenance-records.index', compact('records', 'vehicles', 'selectedVehicleId'));
     }
 
     public function create(Request $r)
     {
-        $vehicles = Vehicle::where('user_id', Auth::id())->orderBy('name')->get();
-        $maintenanceItems = MaintenanceItem::where('is_active', true)
-            ->orderBy('category')
-            ->orderBy('name')
-            ->get();
-
-        $selectedVehicleId = $r->input('vehicle_id');
+        $vehicles         = $this->cachedUserVehicles();
+        $maintenanceItems = $this->cachedMaintenanceItems();
+        $selectedVehicleId = $r->input('vehicle_id', session('active_vehicle_id'));
 
         return view('maintenance-records.create', compact('vehicles', 'maintenanceItems', 'selectedVehicleId'));
     }
@@ -111,17 +119,17 @@ class MaintenanceRecordController extends Controller
     {
         $data = $this->validateRecord($r);
 
-        $vehicle = Vehicle::findOrFail($data['vehicle_id']);
-        abort_unless($vehicle->user_id === Auth::id(), 403);
+        $userVehicleIds = $this->cachedUserVehicles()->pluck('id');
+        abort_unless($userVehicleIds->contains($data['vehicle_id']), 403);
 
-        DB::transaction(function () use ($data, $vehicle) {
+        DB::transaction(function () use ($data) {
             $record = MaintenanceRecord::create([
-                'vehicle_id'    => $data['vehicle_id'],
-                'service_at'    => $data['service_at'],
-                'recorded_at'   => now(),
-                'odometer_km'   => $data['odometer_km'],
-                'workshop_name' => $data['workshop_name'] ?? null,
-                'notes'         => $data['notes'] ?? null,
+                'vehicle_id'       => $data['vehicle_id'],
+                'service_at'       => $data['service_at'],
+                'recorded_at'      => now(),
+                'odometer_km'      => $data['odometer_km'],
+                'workshop_name'    => $data['workshop_name'] ?? null,
+                'notes'            => $data['notes'] ?? null,
                 'total_parts_cost' => 0,
                 'total_labor_cost' => 0,
                 'total_cost'       => 0,
@@ -135,6 +143,8 @@ class MaintenanceRecordController extends Controller
 
             $this->resetSchedules($record);
         });
+
+        $this->clearVehicleCache();
 
         return redirect()
             ->route('maintenance-records.index')
@@ -154,11 +164,8 @@ class MaintenanceRecordController extends Controller
         $mr->load(['vehicle', 'items.maintenanceItem']);
         $this->authorizeRecord($mr);
 
-        $vehicles = Vehicle::where('user_id', Auth::id())->orderBy('name')->get();
-        $maintenanceItems = MaintenanceItem::where('is_active', true)
-            ->orderBy('category')
-            ->orderBy('name')
-            ->get();
+        $vehicles         = $this->cachedUserVehicles();
+        $maintenanceItems = $this->cachedMaintenanceItems();
 
         return view('maintenance-records.edit', [
             'record'           => $mr,
@@ -174,8 +181,8 @@ class MaintenanceRecordController extends Controller
 
         $data = $this->validateRecord($r);
 
-        $vehicle = Vehicle::findOrFail($data['vehicle_id']);
-        abort_unless($vehicle->user_id === Auth::id(), 403);
+        $userVehicleIds = $this->cachedUserVehicles()->pluck('id');
+        abort_unless($userVehicleIds->contains($data['vehicle_id']), 403);
 
         DB::transaction(function () use ($data, $mr) {
             $mr->update([
@@ -186,7 +193,6 @@ class MaintenanceRecordController extends Controller
                 'notes'         => $data['notes'] ?? null,
             ]);
 
-            // Delete old items and re-insert
             $mr->items()->delete();
             $this->saveItems($mr, $data['items']);
 
@@ -196,6 +202,8 @@ class MaintenanceRecordController extends Controller
 
             $this->resetSchedules($mr);
         });
+
+        $this->clearVehicleCache();
 
         return redirect()
             ->route('maintenance-records.show', $mr)
@@ -208,7 +216,6 @@ class MaintenanceRecordController extends Controller
         $this->authorizeRecord($mr);
 
         DB::transaction(function () use ($mr) {
-            // For each schedule that was reset by this record, roll back to previous valid service
             foreach ($mr->items as $item) {
                 if ($item->maintenance_item_id) {
                     $schedule = VehicleMaintenanceSchedule::where('vehicle_id', $mr->vehicle_id)
@@ -217,7 +224,6 @@ class MaintenanceRecordController extends Controller
                         ->first();
 
                     if ($schedule) {
-                        // Find the previous valid record for this maintenance_item
                         $prevRecord = MaintenanceRecord::with('items')
                             ->whereHas('items', fn($q) => $q->where('maintenance_item_id', $item->maintenance_item_id))
                             ->where('vehicle_id', $mr->vehicle_id)
@@ -228,7 +234,6 @@ class MaintenanceRecordController extends Controller
                         if ($prevRecord) {
                             $schedule->resetFromRecord($prevRecord);
                         } else {
-                            // No previous service — clear the last service fields
                             $schedule->update([
                                 'last_service_record_id'   => null,
                                 'last_service_odometer_km' => null,
@@ -241,6 +246,8 @@ class MaintenanceRecordController extends Controller
 
             $mr->delete();
         });
+
+        $this->clearVehicleCache();
 
         return redirect()
             ->route('maintenance-records.index')

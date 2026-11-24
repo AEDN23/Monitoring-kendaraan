@@ -12,9 +12,9 @@
             <div class="col-12 col-sm-6 col-lg-3">
                 <label for="vehicle_id" class="form-label small fw-semibold text-secondary">Kendaraan</label>
                 <select name="vehicle_id" id="vehicle_id" class="form-select form-select-sm">
-                    <option value="">Semua Kendaraan</option>
+                    <option value="all" {{ ($vehicleId == 'all') ? 'selected' : '' }}>Semua Kendaraan</option>
                     @foreach ($vehicles as $v)
-                        <option value="{{ $v->id }}" {{ $vehicleId == $v->id ? 'selected' : '' }}>
+                        <option value="{{ $v->id }}" {{ ($vehicleId == $v->id) ? 'selected' : '' }}>
                             {{ $v->name }} {{ $v->license_plate ? "({$v->license_plate})" : '' }}
                         </option>
                     @endforeach

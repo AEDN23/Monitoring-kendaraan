@@ -36,6 +36,8 @@ class MaintenanceItemController extends Controller
 
         MaintenanceItem::create($validated);
 
+        \Illuminate\Support\Facades\Cache::forget('maintenance_items_active');
+
         return redirect()->route('maintenance-items.index')
             ->with('success', 'Komponen perawatan berhasil ditambahkan.');
     }
@@ -62,6 +64,8 @@ class MaintenanceItemController extends Controller
 
         $maintenanceItem->update($validated);
 
+        \Illuminate\Support\Facades\Cache::forget('maintenance_items_active');
+
         return redirect()->route('maintenance-items.index')
             ->with('success', 'Komponen perawatan berhasil diperbarui.');
     }
@@ -72,6 +76,7 @@ class MaintenanceItemController extends Controller
     public function destroy(MaintenanceItem $maintenanceItem)
     {
         $maintenanceItem->update(['is_active' => ! $maintenanceItem->is_active]);
+        \Illuminate\Support\Facades\Cache::forget('maintenance_items_active');
 
         $status = $maintenanceItem->is_active ? 'diaktifkan' : 'dinonaktifkan';
 

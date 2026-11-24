@@ -6,6 +6,7 @@ use App\Models\FuelTransaction;
 use App\Models\FuelType;
 use App\Models\Vehicle;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class FuelTransactionController extends Controller
 {
@@ -13,7 +14,7 @@ class FuelTransactionController extends Controller
 
     public function index(Request $request)
     {
-        $vehicles = auth()->user()->vehicles()->orderBy('name')->get();
+        $vehicles       = $this->cachedUserVehicles();
         $userVehicleIds = $vehicles->pluck('id');
 
         if ($userVehicleIds->isEmpty()) {
@@ -25,38 +26,55 @@ class FuelTransactionController extends Controller
             ->whereIn('vehicle_id', $userVehicleIds)
             ->orderBy('transaction_at', 'desc');
 
-        if ($request->filled('vehicle_id')) {
-            $query->where('vehicle_id', $request->vehicle_id);
+        $selectedVehicleId = $request->has('vehicle_id')
+            ? $request->input('vehicle_id')
+            : session('active_vehicle_id');
+
+        if ($selectedVehicleId && $selectedVehicleId !== 'all') {
+            $query->where('vehicle_id', $selectedVehicleId);
         }
 
         $fuelTransactions = $query->paginate(15)->withQueryString();
 
-        return view('fuel-transactions.index', compact('fuelTransactions', 'vehicles'));
+        return view('fuel-transactions.index', compact('fuelTransactions', 'vehicles', 'selectedVehicleId'));
     }
 
     // ── Create ───────────────────────────────────────────────────────────────
 
-    public function create()
+    public function create(Request $request)
     {
-        $vehicles  = auth()->user()->vehicles()->orderBy('name')->get();
-        $fuelTypes = FuelType::where('is_active', true)->orderBy('name')->get();
+        $vehicles  = $this->cachedUserVehicles();
+        $fuelTypes = $this->cachedFuelTypes();
+        $selectedVehicleId = $request->input('vehicle_id', session('active_vehicle_id'));
+        $currentVehicle = $vehicles->firstWhere('id', $selectedVehicleId) ?? $vehicles->first();
 
-        return view('fuel-transactions.create', compact('vehicles', 'fuelTypes'));
+        return view('fuel-transactions.create', compact('vehicles', 'fuelTypes', 'selectedVehicleId', 'currentVehicle'));
     }
 
     // ── Store ────────────────────────────────────────────────────────────────
 
     public function store(Request $r)
     {
+        // Bersihkan titik ribuan dari input jika ada
+        if ($r->has('total_amount')) {
+            $r->merge([
+                'total_amount'    => str_replace('.', '', (string) $r->total_amount),
+                'price_per_liter' => str_replace('.', '', (string) $r->price_per_liter),
+                'odometer_km'     => str_replace(['.', ','], ['', '.'], (string) $r->odometer_km),
+            ]);
+        }
+
         $data = $r->validate($this->rules());
 
-        // Pastikan kendaraan milik user
         $this->authorizeVehicle($data['vehicle_id']);
 
         $data['recorded_at']   = now();
         $data['volume_liter']  = round($data['total_amount'] / $data['price_per_liter'], 3);
 
         FuelTransaction::create($data);
+
+        // Clear kendaraan cache agar odometer terbaru muncul
+        $this->clearVehicleCache();
 
         return redirect()->route('fuel-transactions.index')
             ->with('success', 'Transaksi BBM berhasil dicatat.');
@@ -79,8 +97,8 @@ class FuelTransactionController extends Controller
     {
         $this->authorizeOwner($fuelTransaction);
 
-        $vehicles  = auth()->user()->vehicles()->orderBy('name')->get();
-        $fuelTypes = FuelType::where('is_active', true)->orderBy('name')->get();
+        $vehicles  = $this->cachedUserVehicles();
+        $fuelTypes = $this->cachedFuelTypes();
 
         return view('fuel-transactions.edit', compact('fuelTransaction', 'vehicles', 'fuelTypes'));
     }
@@ -91,6 +109,15 @@ class FuelTransactionController extends Controller
     {
         $this->authorizeOwner($fuelTransaction);
 
+        // Bersihkan titik ribuan dari input jika ada
+        if ($r->has('total_amount')) {
+            $r->merge([
+                'total_amount'    => str_replace('.', '', (string) $r->total_amount),
+                'price_per_liter' => str_replace('.', '', (string) $r->price_per_liter),
+                'odometer_km'     => str_replace(['.', ','], ['', '.'], (string) $r->odometer_km),
+            ]);
+        }
+
         $data = $r->validate($this->rules());
 
         $this->authorizeVehicle($data['vehicle_id']);
@@ -98,6 +125,8 @@ class FuelTransactionController extends Controller
         $data['volume_liter'] = round($data['total_amount'] / $data['price_per_liter'], 3);
 
         $fuelTransaction->update($data);
+
+        $this->clearVehicleCache();
 
         return redirect()->route('fuel-transactions.index')
             ->with('success', 'Transaksi BBM berhasil diperbarui.');
@@ -111,6 +140,8 @@ class FuelTransactionController extends Controller
 
         $fuelTransaction->delete();
 
+        $this->clearVehicleCache();
+
         return redirect()->route('fuel-transactions.index')
             ->with('success', 'Transaksi BBM berhasil dihapus.');
     }
@@ -119,7 +150,7 @@ class FuelTransactionController extends Controller
 
     private function authorizeOwner(FuelTransaction $ft): void
     {
-        $userVehicleIds = auth()->user()->vehicles()->pluck('id');
+        $userVehicleIds = $this->cachedUserVehicles()->pluck('id');
         if (! $userVehicleIds->contains($ft->vehicle_id)) {
             abort(403);
         }
@@ -127,9 +158,14 @@ class FuelTransactionController extends Controller
 
     private function authorizeVehicle(int $vehicleId): void
     {
-        if (! auth()->user()->vehicles()->where('id', $vehicleId)->exists()) {
+        if (! $this->cachedUserVehicles()->contains('id', $vehicleId)) {
             abort(403);
         }
+    }
+
+    private function cachedFuelTypes()
+    {
+        return \App\Models\FuelType::where('is_active', true)->orderBy('name')->get();
     }
 
     private function rules(): array

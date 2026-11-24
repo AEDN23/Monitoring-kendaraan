@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\VehicleController;
+use App\Http\Controllers\VehicleSelectionController;
 use App\Http\Controllers\FuelTransactionController;
 use App\Http\Controllers\FuelTypeController;
 use App\Http\Controllers\MaintenanceItemController;
@@ -13,6 +14,10 @@ use App\Http\Controllers\ReportController;
 // Redirect login/register langsung ke dashboard
 Route::get('/login', fn () => redirect('/'))->name('login');
 Route::get('/register', fn () => redirect('/'))->name('register');
+
+// Portal Pilih / Ganti Kendaraan Aktif
+Route::get('/select-vehicle', [VehicleSelectionController::class, 'index'])->name('vehicle.select');
+Route::post('/select-vehicle/{vehicle}', [VehicleSelectionController::class, 'select'])->name('vehicle.select.post');
 
 // Dashboard utama
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');

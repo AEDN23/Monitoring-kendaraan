@@ -24,6 +24,28 @@
         <button type="button" class="btn-close btn-close-white ms-auto d-lg-none" id="closeSidebarBtn" aria-label="Close"></button>
     </div>
 
+    @if (isset($activeVehicle) && $activeVehicle)
+        <div class="px-3 pt-3 pb-2">
+            <div class="p-2 rounded-3 bg-dark bg-opacity-50 border border-secondary border-opacity-25">
+                <div class="d-flex align-items-center justify-content-between mb-1">
+                    <span class="text-secondary small" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px;">Kendaraan Aktif</span>
+                    <a href="{{ route('vehicle.select') }}" class="text-primary text-decoration-none small" style="font-size: 0.75rem;" title="Ganti Kendaraan">
+                        <i class="bi bi-arrow-left-right"></i> Ganti
+                    </a>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi {{ $activeVehicle->vehicle_type === 'motorcycle' ? 'bi-bicycle' : 'bi-car-front-fill' }} text-primary fs-5"></i>
+                    <div class="overflow-hidden">
+                        <div class="fw-bold text-white text-truncate small">{{ $activeVehicle->name }}</div>
+                        <div class="text-secondary font-monospace" style="font-size: 0.7rem;">
+                            {{ $activeVehicle->license_plate ?? 'Tanpa Plat' }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
     <div class="sidebar-menu">
         <ul class="nav flex-column mb-3">
             @php
@@ -86,8 +108,21 @@
             @yield('header', 'Dashboard')
         </div>
 
-        <div class="ms-auto d-flex align-items-center">
-            <span class="badge badge-subtle-primary py-2 px-3 rounded-pill d-flex align-items-center gap-2">
+        <div class="ms-auto d-flex align-items-center gap-2">
+            @if (isset($activeVehicle) && $activeVehicle)
+                <div class="d-flex align-items-center gap-2 bg-light border rounded-pill px-3 py-1 shadow-sm">
+                    <i class="bi {{ $activeVehicle->vehicle_type === 'motorcycle' ? 'bi-bicycle' : 'bi-car-front-fill' }} text-primary"></i>
+                    <span class="fw-bold text-dark small">{{ $activeVehicle->name }}</span>
+                    @if($activeVehicle->license_plate)
+                        <span class="badge bg-dark text-white font-monospace" style="font-size: 0.7rem;">{{ $activeVehicle->license_plate }}</span>
+                    @endif
+                    <a href="{{ route('vehicle.select') }}" class="btn btn-sm btn-outline-primary rounded-pill py-0 px-2 ms-1" style="font-size: 0.75rem;" title="Ganti Kendaraan">
+                        <i class="bi bi-arrow-left-right me-1"></i> Ganti
+                    </a>
+                </div>
+            @endif
+
+            <span class="badge badge-subtle-primary py-2 px-3 rounded-pill d-none d-sm-flex align-items-center gap-2">
                 <span class="badge bg-success p-1 rounded-circle"></span>
                 <span>{{ auth()->user()->name ?? 'Pemilik Kendaraan' }}</span>
             </span>

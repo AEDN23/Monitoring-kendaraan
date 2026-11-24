@@ -7,6 +7,7 @@ use App\Models\Vehicle;
 use App\Models\VehicleMaintenanceSchedule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class VehicleMaintenanceScheduleController extends Controller
 {
@@ -31,7 +32,6 @@ class VehicleMaintenanceScheduleController extends Controller
             'is_active'                => 'sometimes|boolean',
         ]);
 
-        // Check if tracking_mode is condition — skip interval requirement
         $item = MaintenanceItem::find($data['maintenance_item_id']);
         if ($item && $item->tracking_mode !== 'condition') {
             if (empty($data['interval_km']) && empty($data['interval_days'])) {
@@ -41,7 +41,6 @@ class VehicleMaintenanceScheduleController extends Controller
             }
         }
 
-        // Cast checkbox
         $data['is_active'] = $r->boolean('is_active');
 
         return $data;
@@ -51,17 +50,13 @@ class VehicleMaintenanceScheduleController extends Controller
 
     public function index(?Vehicle $vehicle = null)
     {
-        $user = Auth::user();
-        $vehicles = $user->vehicles()
-            ->where('is_active', true)
-            ->withLatestOdometer()
-            ->orderBy('name')
-            ->get();
+        // Ambil kendaraan dari cache (sudah dengan odometer)
+        $vehicles = $this->cachedUserVehicles(activeOnly: true, withOdometer: true);
 
         if (! $vehicle || ! $vehicle->exists) {
-            $vehicle = $vehicles->first();
+            $activeId = session('active_vehicle_id');
+            $vehicle = $vehicles->firstWhere('id', $activeId) ?? $vehicles->first();
         } else {
-            // Reuse the instance that already has max odometer loaded
             $vehicle = $vehicles->firstWhere('id', $vehicle->id) ?? $vehicle;
         }
 
@@ -94,7 +89,6 @@ class VehicleMaintenanceScheduleController extends Controller
     {
         $this->authorizeVehicle($vehicle);
 
-        // Items already registered for this vehicle
         $usedItemIds = $vehicle->maintenanceSchedules()->pluck('maintenance_item_id');
 
         $maintenanceItems = MaintenanceItem::where('is_active', true)
@@ -114,6 +108,8 @@ class VehicleMaintenanceScheduleController extends Controller
         $data['vehicle_id'] = $vehicle->id;
 
         VehicleMaintenanceSchedule::create($data);
+
+        $this->clearVehicleCache();
 
         return redirect()
             ->route('schedules.index', $vehicle)
@@ -141,6 +137,8 @@ class VehicleMaintenanceScheduleController extends Controller
         $data = $this->validateSchedule($r, $vehicle);
         $schedule->update($data);
 
+        $this->clearVehicleCache();
+
         return redirect()
             ->route('schedules.index', $vehicle)
             ->with('success', 'Jadwal perawatan berhasil diperbarui.');
@@ -152,6 +150,8 @@ class VehicleMaintenanceScheduleController extends Controller
         abort_unless($schedule->vehicle_id === $vehicle->id, 404);
 
         $schedule->delete();
+
+        $this->clearVehicleCache();
 
         return redirect()
             ->route('schedules.index', $vehicle)

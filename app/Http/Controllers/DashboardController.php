@@ -11,72 +11,99 @@ use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        // Semua kendaraan milik user (aktif)
-        $vehicles = $user->vehicles()
-            ->where('is_active', true)
-            ->withLatestOdometer()
-            ->with(['maintenanceSchedules.maintenanceItem'])
-            ->get();
+        // Ambil kendaraan aktif dari middleware EnsureActiveVehicle
+        $activeVehicle = $request->get('activeVehicle');
 
-        // ── Statistik ────────────────────────────────────────
-        $totalVehicles = $vehicles->count();
-        $vehicleIds = $vehicles->pluck('id');
+        // Semua kendaraan aktif milik user (untuk switcher jika ingin ganti)
+        $allVehicles = $this->cachedUserVehicles(activeOnly: true, withOdometer: true);
 
-        $totalFuelThisMonth = $vehicleIds->isNotEmpty()
-            ? FuelTransaction::whereIn('vehicle_id', $vehicleIds)
-                ->whereYear('transaction_at', now()->year)
-                ->whereMonth('transaction_at', now()->month)
+        if (! $activeVehicle && $allVehicles->isNotEmpty()) {
+            $activeVehicle = $allVehicles->first();
+        }
+
+        $now = now();
+        $year = $now->year;
+        $month = $now->month;
+
+        // Statistik khusus kendaraan yang sedang aktif
+        $activeVehicleId = $activeVehicle ? $activeVehicle->id : null;
+
+        $totalFuelThisMonth = $activeVehicleId
+            ? FuelTransaction::where('vehicle_id', $activeVehicleId)
+                ->whereYear('transaction_at', $year)
+                ->whereMonth('transaction_at', $month)
                 ->sum('total_amount')
             : 0;
 
-        $totalServiceThisMonth = $vehicleIds->isNotEmpty()
-            ? MaintenanceRecord::whereIn('vehicle_id', $vehicleIds)
-                ->whereYear('service_at', now()->year)
-                ->whereMonth('service_at', now()->month)
+        $totalServiceThisMonth = $activeVehicleId
+            ? MaintenanceRecord::where('vehicle_id', $activeVehicleId)
+                ->whereYear('service_at', $year)
+                ->whereMonth('service_at', $month)
                 ->sum('total_cost')
             : 0;
 
-        // ── Status perawatan per kendaraan ───────────────────
-        $vehicleStatuses = $vehicles->map(function (Vehicle $vehicle) {
-            $odometer = $vehicle->latestOdometerKm() ?? 0;
-            $schedules = $vehicle->maintenanceSchedules->where('is_active', true);
+        // Jadwal perawatan kendaraan aktif
+        $schedules = collect();
+        $worstStatus = 'safe';
 
-            // Hitung status worst-case per kendaraan
-            $worstStatus = 'safe';
+        if ($activeVehicle) {
+            $odometer = $activeVehicle->latestOdometerKm() ?? 0;
+            $rawSchedules = $activeVehicle->maintenanceSchedules()
+                ->where('is_active', true)
+                ->with('maintenanceItem')
+                ->get();
+
             $statusPriority = ['overdue' => 3, 'soon' => 2, 'needs_inspection' => 1, 'safe' => 0];
 
-            $scheduleDetails = $schedules->map(function ($schedule) use ($odometer) {
+            $schedules = $rawSchedules->map(function ($s) use ($odometer) {
+                $status = $s->status($odometer);
                 return [
-                    'name'   => $schedule->maintenanceItem->name ?? '-',
-                    'status' => $schedule->status($odometer),
+                    'schedule'    => $s,
+                    'name'        => $s->maintenanceItem->name ?? '-',
+                    'status'      => $status,
+                    'next_due_km' => $s->nextDueKm(),
+                    'next_date'   => $s->nextDueDate(),
                 ];
             });
 
-            foreach ($scheduleDetails as $detail) {
-                if (($statusPriority[$detail['status']] ?? 0) > ($statusPriority[$worstStatus] ?? 0)) {
-                    $worstStatus = $detail['status'];
+            foreach ($schedules as $sItem) {
+                if (($statusPriority[$sItem['status']] ?? 0) > ($statusPriority[$worstStatus] ?? 0)) {
+                    $worstStatus = $sItem['status'];
                 }
             }
+        }
 
-            return [
-                'vehicle'         => $vehicle,
-                'odometer'        => $odometer,
-                'overall_status'  => $worstStatus,
-                'schedule_detail' => $scheduleDetails,
-            ];
-        });
+        // Transaksi BBM & Servis terakhir kendaraan aktif
+        $recentFuels = $activeVehicleId
+            ? FuelTransaction::where('vehicle_id', $activeVehicleId)
+                ->with('fuelType')
+                ->orderBy('transaction_at', 'desc')
+                ->limit(5)
+                ->get()
+            : collect();
+
+        $recentServices = $activeVehicleId
+            ? MaintenanceRecord::where('vehicle_id', $activeVehicleId)
+                ->with('items')
+                ->orderBy('service_at', 'desc')
+                ->limit(5)
+                ->get()
+            : collect();
 
         return view('dashboard', compact(
-            'vehicles',
-            'totalVehicles',
+            'activeVehicle',
+            'allVehicles',
             'totalFuelThisMonth',
             'totalServiceThisMonth',
-            'vehicleStatuses',
+            'worstStatus',
+            'schedules',
+            'recentFuels',
+            'recentServices'
         ));
     }
 }
