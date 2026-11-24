@@ -27,6 +27,14 @@
       "dest": "/$1$2"
     },
     {
+      "src": "/public/(css|js|fonts|images|build|storage|favicon\\.ico|robots\\.txt)(.*)",
+      "dest": "/$1$2"
+    },
+    {
+      "src": "/public/(.*)",
+      "dest": "/api/index.php"
+    },
+    {
       "src": "/(.*)",
       "dest": "/api/index.php"
     }
