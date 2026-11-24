@@ -23,7 +23,8 @@
   ],
   "routes": [
     {
-      "handle": "filesystem"
+      "src": "/(css|js|fonts|images|build|storage|favicon\\.ico|robots\\.txt)(.*)",
+      "dest": "/$1$2"
     },
     {
       "src": "/(.*)",
