@@ -1,0 +1,217 @@
+:root {
+    --bs-primary: #4f46e5;
+    --bs-primary-rgb: 79, 70, 229;
+    --sidebar-bg: #1e1b4b;
+    --sidebar-hover: #312e81;
+    --sidebar-active: #4338ca;
+}
+
+body {
+    background-color: #f8fafc;
+    color: #1e293b;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    min-height: 100vh;
+}
+
+/* Sidebar */
+.app-sidebar {
+    width: 260px;
+    background-color: var(--sidebar-bg);
+    color: #ffffff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1030;
+    transition: transform 0.2s ease-in-out;
+}
+
+.app-sidebar .sidebar-brand {
+    height: 64px;
+    display: flex;
+    align-items: center;
+    padding: 0 1.25rem;
+    font-weight: 700;
+    font-size: 1.15rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.app-sidebar .sidebar-menu {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem 0.75rem;
+}
+
+.app-sidebar .menu-header {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #94a3b8;
+    padding: 0.75rem 0.75rem 0.25rem;
+    font-weight: 600;
+}
+
+.app-sidebar .nav-link {
+    color: #cbd5e1;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0.6rem 0.85rem;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.25rem;
+    transition: all 0.15s ease-in-out;
+}
+
+.app-sidebar .nav-link i,
+.app-sidebar .nav-link svg {
+    font-size: 1.1rem;
+    color: #818cf8;
+}
+
+.app-sidebar .nav-link:hover {
+    color: #ffffff;
+    background-color: var(--sidebar-hover);
+}
+
+.app-sidebar .nav-link.active {
+    color: #ffffff;
+    background-color: var(--sidebar-active);
+    font-weight: 600;
+}
+
+.app-sidebar .nav-link.active i,
+.app-sidebar .nav-link.active svg {
+    color: #ffffff;
+}
+
+/* Main Content Wrapper */
+.app-main {
+    margin-left: 260px;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.app-header {
+    height: 64px;
+    background-color: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 1020;
+}
+
+.app-content {
+    flex: 1;
+    padding: 1.5rem;
+}
+
+/* Responsive Sidebar for Mobile */
+@media (max-width: 991.98px) {
+    .app-sidebar {
+        transform: translateX(-100%);
+    }
+    .app-sidebar.show {
+        transform: translateX(0);
+        box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
+    }
+    .app-main {
+        margin-left: 0;
+    }
+}
+
+.sidebar-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1025;
+    display: none;
+}
+.sidebar-backdrop.show {
+    display: block;
+}
+
+/* Card & UI components */
+.card {
+    border: 1px solid #e2e8f0;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    background-color: #ffffff;
+}
+
+.card-header {
+    background-color: transparent;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 1rem 1.25rem;
+    font-weight: 600;
+}
+
+.btn-primary {
+    background-color: #4f46e5;
+    border-color: #4f46e5;
+}
+
+.btn-primary:hover, .btn-primary:focus {
+    background-color: #4338ca;
+    border-color: #4338ca;
+}
+
+.btn-indigo {
+    background-color: #4f46e5;
+    color: #ffffff;
+}
+.btn-indigo:hover {
+    background-color: #4338ca;
+    color: #ffffff;
+}
+
+.badge-subtle-success {
+    background-color: #dcfce7;
+    color: #15803d;
+}
+.badge-subtle-warning {
+    background-color: #fef9c3;
+    color: #854d0e;
+}
+.badge-subtle-danger {
+    background-color: #fee2e2;
+    color: #b91c1c;
+}
+.badge-subtle-primary {
+    background-color: #e0e7ff;
+    color: #3730a3;
+}
+.badge-subtle-secondary {
+    background-color: #f1f5f9;
+    color: #475569;
+}
+
+/* Tables */
+.table th {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+    font-weight: 600;
+    border-top: none;
+    background-color: #f8fafc;
+}
+
+.table td {
+    vertical-align: middle;
+    font-size: 0.875rem;
+}
